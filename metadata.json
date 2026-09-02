@@ -1,0 +1,6 @@
+{
+  "name": "معايشة القرآن | Mo'ayasha",
+  "description": "منصة تعليمية وتربوية متكاملة لبرنامج معايشة القرآن للأبناء من 6 إلى 15 سنة",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

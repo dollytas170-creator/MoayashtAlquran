@@ -1,0 +1,186 @@
+import {
+  AgeGroupConfig,
+  QuranProgram,
+  SurahPlan,
+  PricingConfig,
+  AssessmentCriterion,
+  BadgeItem,
+} from '../types';
+
+export const INITIAL_AGE_GROUPS: AgeGroupConfig[] = [
+  {
+    id: 'ag-6-9',
+    name: 'الفئة العمرية (6 - 9 سنوات)',
+    minAge: 6,
+    maxAge: 9,
+    description: 'تجربة بصرية تفاعلية مدعومة بالرسومات والتحفيز مع إشراف ومرافقة الوالدين',
+    visualTheme: 'playful',
+    parentSupervisionLevel: 'high',
+    active: true,
+  },
+  {
+    id: 'ag-10-12',
+    name: 'الفئة العمرية (10 - 12 سنة)',
+    minAge: 10,
+    maxAge: 12,
+    description: 'إدارة أهداف واضحة وتحديات تدبرية تنمي المسؤولية والاستقلالية التدريجية',
+    visualTheme: 'balanced',
+    parentSupervisionLevel: 'medium',
+    active: true,
+  },
+  {
+    id: 'ag-13-15',
+    name: 'الفئة العمرية (13 - 15 سنة)',
+    minAge: 13,
+    maxAge: 15,
+    description: 'بيئة ناضجة وراقية تركز على الأهداف الشخصية والتأمل العميق وبناء الذات بالقرآن',
+    visualTheme: 'mature',
+    parentSupervisionLevel: 'independent',
+    active: true,
+  },
+];
+
+export const INITIAL_PROGRAM: QuranProgram = {
+  id: 'moayasha-3months',
+  name: 'برنامج التربية بالمعايشة القرآنية',
+  tagline: 'رحلة ابنك ليعيش مع القرآن — يحفظ، يفهم، يتدبر، ويطبق',
+  coachName: 'كوتش عمر فارس',
+  durationMonths: 3,
+  description: 'برنامج تربوي قرآني شامل للأبناء من 6 إلى 15 سنة يهدف إلى نقل الطفل واليافع من مجرد الحفظ المجرد إلى المعايشة الحية لآيات القرآن في تفاصيل يومه وحياته.',
+  targetAgeGroupIds: ['ag-6-9', 'ag-10-12', 'ag-13-15'],
+  surahs: ['سورة العلق', 'سورة المزمل', 'سورة المدثر'],
+  monthlyTadabburSessions: 4,
+  monthlyMemorizationSessions: 8,
+  stages: ['أتعلم', 'أحفظ', 'أفهم', 'أتدبر', 'أطبق', 'أشارك أسرتي'],
+  status: 'active',
+  standardPriceMonthly: 2000,
+  promotionalPriceMonthly: 1500,
+  siblingPriceMonthly: 1250,
+};
+
+export const INITIAL_SURAHS: SurahPlan[] = [
+  {
+    id: 'surah-alaq',
+    programId: 'moayasha-3months',
+    monthNumber: 1,
+    surahName: 'سورة العلق',
+    weeklyDivisions: [], // Empty initially - coach/admin can add divisions
+    tadabburObjectives: [],
+    practicalApplications: [],
+    notes: 'الشهر الأول من البرنامج',
+  },
+  {
+    id: 'surah-muzzammil',
+    programId: 'moayasha-3months',
+    monthNumber: 2,
+    surahName: 'سورة المزمل',
+    weeklyDivisions: [],
+    tadabburObjectives: [],
+    practicalApplications: [],
+    notes: 'الشهر الثاني من البرنامج',
+  },
+  {
+    id: 'surah-muddathir',
+    programId: 'moayasha-3months',
+    monthNumber: 3,
+    surahName: 'سورة المدثر',
+    weeklyDivisions: [],
+    tadabburObjectives: [],
+    practicalApplications: [],
+    notes: 'الشهر الثالث من البرنامج',
+  },
+];
+
+export const INITIAL_PRICING: PricingConfig = {
+  regularMonthlyEGP: 2000,
+  promotionalMonthlyEGP: 1500,
+  siblingMonthlyEGP: 1250,
+  promoCapacity: 15,
+  promoSubscribersCount: 0,
+  currency: 'ج.م',
+  coupons: [
+    { code: 'MOAYASHA25', discountPercent: 25, active: true },
+    { code: 'FAMILY10', discountPercent: 10, active: true },
+  ],
+};
+
+export const INITIAL_ASSESSMENT_CRITERIA: AssessmentCriterion[] = [
+  {
+    id: 'crit-mem-1',
+    category: 'memorization',
+    title: 'إتقان الحفظ والاسترسال',
+    maxScore: 30,
+    description: 'دقة حفظ الآيات المقررة دون تردد أو توقف',
+    active: true,
+  },
+  {
+    id: 'crit-taj-1',
+    category: 'tajweed',
+    title: 'أحكام التجويد ومخارج الحروف',
+    maxScore: 20,
+    description: 'مراعاة أحكام النون والميم والمدود والمخارج الأساسية',
+    active: true,
+  },
+  {
+    id: 'crit-tad-1',
+    category: 'tadabbur',
+    title: 'فهم المعاني والمشاركة التدبرية',
+    maxScore: 25,
+    description: 'القدرة على استخراج الفوائد والخواطر القرآنية ومشاركتها في الجلسة',
+    active: true,
+  },
+  {
+    id: 'crit-app-1',
+    category: 'behavior',
+    title: 'التطبيق والأنشطة الأسرية',
+    maxScore: 15,
+    description: 'تنفيذ المهام التطبيقية ومشاركة الأسرة في تفعيل الآية',
+    active: true,
+  },
+  {
+    id: 'crit-att-1',
+    category: 'attendance',
+    title: 'حضور الجلسات التفاعلية',
+    maxScore: 10,
+    description: 'الالتزام بمواعيد الجلسات المباشرة والتفاعل الإيجابي',
+    active: true,
+  },
+];
+
+export const INITIAL_BADGES: BadgeItem[] = [
+  {
+    id: 'badge-seed',
+    title: 'بذرة الخير',
+    description: 'لبداية الرحلة القرآنية وتسجيل أول حضور وتسميع',
+    iconType: 'seed',
+    requiredPoints: 50,
+  },
+  {
+    id: 'badge-reader',
+    title: 'قارئ الأسبوع',
+    description: 'للالتزام التام بجدول الحفظ والمراجعة الأسبوعي',
+    iconType: 'book',
+    requiredPoints: 120,
+  },
+  {
+    id: 'badge-lived',
+    title: 'عشت الآية',
+    description: 'لإكمال المهام التدبرية وتطبيق أثر الآيات عملياً',
+    iconType: 'heart',
+    requiredPoints: 200,
+  },
+  {
+    id: 'badge-friend',
+    title: 'صديق القرآن',
+    description: 'للمواظبة والارتقاء المستمر في حلقات التسميع والتدبر',
+    iconType: 'tree',
+    requiredPoints: 350,
+  },
+  {
+    id: 'badge-star',
+    title: 'نجم المعايشة',
+    description: 'لتحقيق تميز شامل في الحفظ والفهم والتطبيق والمشاركة الأسرية',
+    iconType: 'star',
+    requiredPoints: 500,
+  },
+];
