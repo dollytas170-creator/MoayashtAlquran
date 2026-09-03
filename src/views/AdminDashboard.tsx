@@ -18,6 +18,10 @@ import {
   Award,
   Layers,
   Sparkles,
+  X,
+  Clock,
+  UserCheck,
+  Check,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SessionType } from '../types';
@@ -41,6 +45,7 @@ export const AdminDashboard: React.FC = () => {
     addSession,
     ageGroups,
     surahs,
+    activateChildByAdmin,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<
@@ -195,33 +200,59 @@ export const AdminDashboard: React.FC = () => {
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-stone-200 mb-8 overflow-x-auto pb-2">
-          {[
-            { id: 'overview', label: 'نظرة عامة وإحصائيات', icon: TrendingUp },
-            { id: 'curriculum', label: 'المنهج والخطة التعليمية', icon: BookOpen },
-            { id: 'staff', label: 'المعلمون والمشرفون', icon: GraduationCap },
-            { id: 'groups', label: 'المجموعات والفئات العمرية', icon: Layers },
-            { id: 'pricing', label: 'التسعير والكوبونات', icon: DollarSign },
-            { id: 'sessions', label: 'جدول الجلسات المباشرة', icon: Calendar },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
-                  isActive
-                    ? 'bg-stone-900 text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center justify-between border-b border-stone-200 mb-8 pb-2 gap-4">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {[
+              { id: 'overview', label: 'نظرة عامة وإحصائيات', icon: TrendingUp },
+              { id: 'curriculum', label: 'المنهج والخطة التعليمية', icon: BookOpen },
+              { id: 'staff', label: 'المعلمون والمشرفون', icon: GraduationCap },
+              { id: 'groups', label: 'المجموعات والفئات العمرية', icon: Layers },
+              { id: 'pricing', label: 'التسعير والكوبونات', icon: DollarSign },
+              { id: 'sessions', label: 'جدول الجلسات المباشرة', icon: Calendar },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+                    isActive
+                      ? 'bg-stone-900 text-white shadow-xs'
+                      : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                  {isActive && activeTab !== 'overview' && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTab('overview');
+                      }}
+                      title="إغلاق التبويب والعودة للنظرة العامة"
+                      className="mr-1 p-0.5 rounded-full hover:bg-stone-800 text-stone-300 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeTab !== 'overview' && (
+            <button
+              type="button"
+              onClick={() => setActiveTab('overview')}
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+              title="إغلاق التبويب والعودة للنظرة العامة"
+            >
+              <X className="w-3.5 h-3.5 text-stone-500" />
+              <span>إغلاق التبويب</span>
+            </button>
+          )}
         </div>
 
         {/* Tab 1: Overview & High-Level Stats */}
@@ -264,6 +295,122 @@ export const AdminDashboard: React.FC = () => {
                   <strong>سياسة البيانات الحقيقية:</strong> المنصة لا تحتوي على أي حسابات مستخدمين وهمية. كافة الحسابات والبيانات المسجلة تبدأ من الصفر تماماً.
                 </span>
               </div>
+            </div>
+
+            {/* Admin Child Activation Section */}
+            <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-xs">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
+                    <UserCheck className="w-5 h-5 text-emerald-700" />
+                    <span>إدارة طلبات الالتحاق وتفعيل اشتراكات الأبناء</span>
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    الطلبات بانتظار التفعيل من الإدارة لنقل الطفل تلقائياً إلى تبويب "الأبناء النشطون" بحساب ولي الأمر
+                  </p>
+                </div>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 border border-stone-200">
+                  إجمالي الطلاب: {students.length}
+                </span>
+              </div>
+
+              {students.filter(s => s.status !== 'archived' && s.status !== 'graduated').length === 0 ? (
+                <div className="p-6 text-center text-xs text-stone-500 bg-stone-50 rounded-xl border border-stone-200">
+                  لا يوجد أطفال مسجلون حالياً. عند قيام أي ولي أمر بتسجيل طفل، سيظهر هنا لمتابعة وتفعيل اشتراكه فوراً.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead>
+                      <tr className="border-b border-stone-200 text-stone-500 font-bold">
+                        <th className="pb-3 pr-2">اسم الطفل</th>
+                        <th className="pb-3 px-3">العمر</th>
+                        <th className="pb-3 px-3">البرنامج</th>
+                        <th className="pb-3 px-3">حالة الالتحاق</th>
+                        <th className="pb-3 pl-2 text-left">إجراء الإدارة</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100">
+                      {students
+                        .filter(s => s.status !== 'archived' && s.status !== 'graduated')
+                        .map((student) => {
+                          const isPendingAct = student.enrollmentStatus === 'pending_activation';
+                          const isPendingSub = student.enrollmentStatus === 'pending_subscription';
+                          const isPendingPay = student.enrollmentStatus === 'pending_payment';
+                          const isAlreadyActive = student.enrollmentStatus === 'active' || student.status === 'active';
+                          const prog = programs.find(p => p.id === student.currentProgramId);
+
+                          return (
+                            <tr key={student.id} className="hover:bg-stone-50/50 transition-colors">
+                              <td className="py-3.5 pr-2 font-bold text-stone-900">
+                                {student.fullName}
+                              </td>
+                              <td className="py-3.5 px-3 text-stone-600">
+                                {student.age} سنة
+                              </td>
+                              <td className="py-3.5 px-3 text-stone-600">
+                                {prog?.name || 'برنامج معايشة القرآن'}
+                              </td>
+                              <td className="py-3.5 px-3">
+                                {isPendingSub && (
+                                  <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-900 border border-blue-200 inline-flex items-center gap-1">
+                                    <Clock className="w-3 h-3 text-blue-700" />
+                                    بانتظار الاشتراك
+                                  </span>
+                                )}
+                                {isPendingPay && (
+                                  <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-200 inline-flex items-center gap-1">
+                                    <CreditCard className="w-3 h-3 text-amber-700" />
+                                    بانتظار السداد
+                                  </span>
+                                )}
+                                {isPendingAct && (
+                                  <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-orange-100 text-orange-900 border border-orange-200 inline-flex items-center gap-1 animate-pulse">
+                                    <Clock className="w-3 h-3 text-orange-700" />
+                                    بانتظار التفعيل من الإدارة
+                                  </span>
+                                )}
+                                {isAlreadyActive && (
+                                  <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1">
+                                    <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                                    مفعّل في الأبناء النشطين
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3.5 pl-2 text-left">
+                                {isPendingAct ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => activateChildByAdmin(student.id)}
+                                    className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                    <span>موافقة وتفعيل الاشتراك</span>
+                                  </button>
+                                ) : isPendingSub || isPendingPay ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => activateChildByAdmin(student.id)}
+                                    className="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium text-[11px] border border-stone-200 transition-colors cursor-pointer inline-flex items-center gap-1"
+                                    title="تفعيل مباشر من الإدارة"
+                                  >
+                                    <Check className="w-3 h-3 text-stone-500" />
+                                    <span>تفعيل يدوي</span>
+                                  </button>
+                                ) : (
+                                  <span className="text-[11px] text-emerald-700 font-bold inline-flex items-center gap-1">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span>نشط</span>
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}

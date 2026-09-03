@@ -167,7 +167,12 @@ export const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-fade-in">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-fade-in"
+    >
       <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="px-6 py-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
@@ -176,8 +181,11 @@ export const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({
             <p className="text-xs text-stone-500">سجل صوتك بوضوح وتأنٍ ليراجعه معلم التحفيظ</p>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white border border-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center cursor-pointer"
+            title="إغلاق النافذة"
+            aria-label="إغلاق"
+            className="w-8 h-8 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center cursor-pointer transition-colors shadow-2xs"
           >
             <X className="w-4 h-4" />
           </button>

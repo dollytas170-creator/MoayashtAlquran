@@ -41,6 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     notifications,
     markNotificationRead,
     resetAllData,
+    logoutParent,
   } = useApp();
 
   const handleOpenLogin = () => {
@@ -65,7 +66,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const parentChildren = students.filter(
-    (s) => s.parentId === activeParent?.id || activeParent === null
+    (s) => (s.parentId === activeParent?.id || activeParent === null) && s.status !== 'archived'
   );
 
   const roleLabels: { [key: string]: { title: string; icon: any; color: string } } = {
@@ -333,11 +334,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
               <button
                 type="button"
-                onClick={handleOpenLogin}
-                className="p-2 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer"
-                title="تبديل الحساب أو تسجيل الخروج"
+                onClick={logoutParent}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer"
+                title="تسجيل الخروج من الحساب"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
+                <span>تسجيل خروج</span>
               </button>
             </div>
           ) : (
@@ -406,26 +408,48 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleOpenLogin();
-              }}
-              className="text-xs font-bold text-stone-700 hover:text-emerald-700 cursor-pointer"
-            >
-              تسجيل الدخول
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleOpenRegister();
-              }}
-              className="text-xs font-bold text-emerald-700 hover:underline cursor-pointer"
-            >
-              إنشاء حساب جديد
-            </button>
+            {activeParent ? (
+              <>
+                <div className="text-right">
+                  <span className="text-xs font-bold text-stone-800 block">{activeParent.fullName}</span>
+                  <span className="text-[10px] text-stone-400">حساب ولي الأمر</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logoutParent();
+                  }}
+                  className="px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>تسجيل خروج</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleOpenLogin();
+                  }}
+                  className="text-xs font-bold text-stone-700 hover:text-emerald-700 cursor-pointer"
+                >
+                  تسجيل الدخول
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleOpenRegister();
+                  }}
+                  className="text-xs font-bold text-emerald-700 hover:underline cursor-pointer"
+                >
+                  إنشاء حساب جديد
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

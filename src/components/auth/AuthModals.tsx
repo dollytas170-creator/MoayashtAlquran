@@ -115,7 +115,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-fade-in">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-fade-in"
+    >
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col">
         {/* Header */}
         <div className="px-6 py-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
@@ -134,8 +139,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white border border-stone-200 text-stone-400 hover:text-stone-700 flex items-center justify-center cursor-pointer"
+            title="إغلاق النافذة"
+            aria-label="إغلاق"
+            className="w-8 h-8 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-stone-400 hover:text-stone-700 flex items-center justify-center cursor-pointer transition-colors shadow-2xs"
           >
             <X className="w-4 h-4" />
           </button>

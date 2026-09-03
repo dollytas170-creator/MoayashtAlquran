@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Clock,
   Layers,
+  X,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -105,31 +106,57 @@ export const SupervisorDashboard: React.FC = () => {
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-stone-200 mb-8 overflow-x-auto pb-2">
-          {[
-            { id: 'teachers', label: `المعلمون (${teachers.length})`, icon: GraduationCap },
-            { id: 'students', label: `الطلاب والمجموعات (${students.length})`, icon: Users },
-            { id: 'generate_report', label: 'إصدار تقرير جديد', icon: FileText },
-            { id: 'reports_archive', label: `سجل التقارير المعتمدة (${reports.length})`, icon: Award },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
-                  isActive
-                    ? 'bg-purple-700 text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center justify-between border-b border-stone-200 mb-8 pb-2 gap-4">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {[
+              { id: 'teachers', label: `المعلمون (${teachers.length})`, icon: GraduationCap },
+              { id: 'students', label: `الطلاب والمجموعات (${students.length})`, icon: Users },
+              { id: 'generate_report', label: 'إصدار تقرير جديد', icon: FileText },
+              { id: 'reports_archive', label: `سجل التقارير المعتمدة (${reports.length})`, icon: Award },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+                    isActive
+                      ? 'bg-purple-700 text-white shadow-xs'
+                      : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                  {isActive && activeTab !== 'teachers' && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTab('teachers');
+                      }}
+                      title="إغلاق التبويب والعودة لطاقم المعلمين"
+                      className="mr-1 p-0.5 rounded-full hover:bg-purple-800 text-purple-100 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeTab !== 'teachers' && (
+            <button
+              type="button"
+              onClick={() => setActiveTab('teachers')}
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+              title="إغلاق التبويب والعودة لطاقم المعلمين"
+            >
+              <X className="w-3.5 h-3.5 text-stone-500" />
+              <span>إغلاق التبويب</span>
+            </button>
+          )}
         </div>
 
         {/* Tab 1: Teachers List */}
@@ -232,11 +259,22 @@ export const SupervisorDashboard: React.FC = () => {
         {/* Tab 3: Report Generator Form */}
         {activeTab === 'generate_report' && (
           <div className="bg-white rounded-2xl p-8 border border-stone-200 shadow-xs max-w-2xl mx-auto space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-stone-900">إصدار تقرير متابعة تربوي مفصل</h3>
-              <p className="text-xs text-stone-500">
-                تقييم شامل لجهود الطالب في الحفظ والتدبر والمشاركة الأسرية وإرساله لولي الأمر
-              </p>
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+              <div>
+                <h3 className="text-lg font-bold text-stone-900">إصدار تقرير متابعة تربوي مفصل</h3>
+                <p className="text-xs text-stone-500">
+                  تقييم شامل لجهود الطالب في الحفظ والتدبر والمشاركة الأسرية وإرساله لولي الأمر
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('teachers')}
+                className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+                title="إغلاق نموذج إصدار التقرير والعودة"
+                aria-label="إغلاق"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <form onSubmit={handleGenerateReport} className="space-y-4">
@@ -344,11 +382,18 @@ export const SupervisorDashboard: React.FC = () => {
                 />
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('teachers')}
+                  className="px-4 py-3 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 font-bold text-sm transition-colors cursor-pointer"
+                >
+                  إلغاء وإغلاق
+                </button>
                 <button
                   type="submit"
                   disabled={students.length === 0}
-                  className="w-full py-3 rounded-xl bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white font-bold text-sm shadow-xs transition-colors cursor-pointer"
+                  className="flex-1 py-3 rounded-xl bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white font-bold text-sm shadow-xs transition-colors cursor-pointer"
                 >
                   اعتماد التقرير وإرساله لولي الأمر
                 </button>

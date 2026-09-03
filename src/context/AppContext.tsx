@@ -24,6 +24,7 @@ import {
 import {
   INITIAL_AGE_GROUPS,
   INITIAL_PROGRAM,
+  INITIAL_PROGRAMS,
   INITIAL_SURAHS,
   INITIAL_PRICING,
   INITIAL_ASSESSMENT_CRITERIA,
@@ -63,9 +64,14 @@ interface AppContextType {
   // Action Methods
   registerParent: (data: { fullName: string; phone: string; email: string; parentalConsent: boolean }) => ParentUser;
   loginParent: (emailOrPhone: string) => boolean;
+  logoutParent: () => void;
   addChild: (childData: { fullName: string; age: number; gender: 'male' | 'female'; ageGroupId: string; birthDate?: string }) => StudentUser;
   updateChild: (id: string, updates: Partial<StudentUser>) => void;
   deleteChild: (id: string) => void;
+  archiveChild: (id: string) => void;
+  restoreChild: (id: string) => void;
+  graduateChild: (id: string, programId?: string, note?: string) => void;
+  activateChildByAdmin: (studentId: string) => void;
   
   // Enrollment & Payments
   enrollChildInProgram: (studentId: string, programId: string) => void;
@@ -195,7 +201,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notifications, setNotifications] = useState<AppNotification[]>(() => getStorage<AppNotification[]>('notifications', []));
 
   // Configurable System Entities
-  const [programs, setPrograms] = useState<QuranProgram[]>(() => getStorage<QuranProgram[]>('programs', [INITIAL_PROGRAM]));
+  const [programs, setPrograms] = useState<QuranProgram[]>(() => {
+    const stored = getStorage<QuranProgram[]>('programs', []);
+    return stored && stored.length >= INITIAL_PROGRAMS.length ? stored : INITIAL_PROGRAMS;
+  });
   const [ageGroups, setAgeGroups] = useState<AgeGroupConfig[]>(() => getStorage<AgeGroupConfig[]>('age_groups', INITIAL_AGE_GROUPS));
   const [surahs, setSurahs] = useState<SurahPlan[]>(() => getStorage<SurahPlan[]>('surahs', INITIAL_SURAHS));
   const [pricing, setPricing] = useState<PricingConfig>(() => getStorage<PricingConfig>('pricing', INITIAL_PRICING));
@@ -229,8 +238,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => setStorage('badges', badges), [badges]);
 
   // Derived Active Objects
-  const activeParent = parents.find(p => p.id === activeParentId) || (parents.length > 0 ? parents[0] : null);
-  const activeStudent = students.find(s => s.id === activeStudentId) || (students.length > 0 ? students[0] : null);
+  const activeParent = activeParentId ? (parents.find(p => p.id === activeParentId) || null) : null;
+  const activeStudent = activeStudentId ? (students.find(s => s.id === activeStudentId) || null) : (students.length > 0 ? students[0] : null);
   const activeTeacher = teachers.find(t => t.id === activeTeacherId) || (teachers.length > 0 ? teachers[0] : null);
   const activeSupervisor = supervisors.find(s => s.id === activeSupervisorId) || (supervisors.length > 0 ? supervisors[0] : null);
 
@@ -278,6 +287,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return false;
   };
 
+  const logoutParent = () => {
+    setActiveParentId(null);
+    setActiveStudentIdState(null);
+    setCurrentRoleState('public');
+    notifyToast('تم تسجيل الخروج من حساب ولي الأمر بنجاح');
+  };
+
   const addChild = (childData: { fullName: string; age: number; gender: 'male' | 'female'; ageGroupId: string; birthDate?: string }): StudentUser => {
     const parentId = activeParent?.id || (parents[0]?.id ?? 'p-demo');
     const newChild: StudentUser = {
@@ -289,6 +305,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ageGroupId: childData.ageGroupId,
       birthDate: childData.birthDate,
       status: 'pending_payment',
+      enrollmentStatus: 'pending_subscription',
       currentProgramId: 'moayasha-3months',
     };
     setStudents(prev => [...prev, newChild]);
@@ -304,14 +321,129 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteChild = (id: string) => {
     setStudents(prev => prev.filter(s => s.id !== id));
+    setTasks(prev => prev.filter(t => t.studentId !== id));
+    setAudioSubmissions(prev => prev.filter(a => a.studentId !== id));
+    setFamilyActivities(prev => prev.filter(fa => fa.studentId !== id));
+    setReports(prev => prev.filter(r => r.studentId !== id));
     if (activeStudentId === id) {
       setActiveStudentIdState(null);
     }
-    notifyToast('تم حذف الطفل');
+    notifyToast('تم حذف ملف الطفل المُضاف بالخطأ بنجاح');
+  };
+
+  const archiveChild = (id: string) => {
+    setStudents(prev => prev.map(s => {
+      if (s.id === id) {
+        return {
+          ...s,
+          status: 'archived' as const,
+          archivedAt: new Date().toISOString(),
+        };
+      }
+      return s;
+    }));
+    if (activeStudentId === id) {
+      setActiveStudentIdState(null);
+    }
+    notifyToast('تمت أرشفة ملف الطفل وحفظ كامل بياناته وسجلاته ومدفوعاته بأمان');
+  };
+
+  const restoreChild = (id: string) => {
+    setStudents(prev => prev.map(s => {
+      if (s.id === id) {
+        return {
+          ...s,
+          status: 'active' as const,
+          archivedAt: undefined,
+        };
+      }
+      return s;
+    }));
+    notifyToast('تمت استعادة ملف الطفل وإعادته إلى قائمة الأبناء النشطين بنجاح');
+  };
+
+  const graduateChild = (id: string, programId?: string, note?: string) => {
+    let childName = '';
+    setStudents(prev => prev.map(s => {
+      if (s.id === id) {
+        childName = s.fullName;
+        const progId = programId || s.currentProgramId || 'moayasha-3months';
+        const existingCompleted = s.completedProgramIds || [];
+        const completedProgramIds = existingCompleted.includes(progId) ? existingCompleted : [...existingCompleted, progId];
+        return {
+          ...s,
+          status: 'graduated' as const,
+          graduatedAt: new Date().toISOString(),
+          completedProgramIds,
+          graduationNote: note || 'أتم برنامج معايشة القرآن الكريم بنجاح ومستعد للمرحلة التالية',
+        };
+      }
+      return s;
+    }));
+
+    // Add congratulatory notification for graduation
+    const targetStudent = students.find(s => s.id === id);
+    if (targetStudent) {
+      const gradNotif: AppNotification = {
+        id: `notif-grad-${Date.now()}`,
+        recipientId: targetStudent.parentId,
+        role: 'parent',
+        title: `🎓 مبارك تخرج ${targetStudent.fullName}!`,
+        message: `تم توثيق إتمام برنامج معايشة القرآن الكريم بنجاح! ملف الطفل محفوظ بالكامل ويمكنكم تسجيله في برنامج متقدم آخر في أي وقت.`,
+        type: 'system',
+        read: false,
+        createdAt: new Date().toISOString(),
+      };
+      setNotifications(prev => [gradNotif, ...prev]);
+    }
+
+    notifyToast(`مبارك! تم توثيق إتمام البرنامج وتخرج ${childName || 'الطفل'} بنجاح 🎓`);
+  };
+
+  const activateChildByAdmin = (studentId: string) => {
+    let studentName = '';
+    setStudents(prev => prev.map(s => {
+      if (s.id === studentId) {
+        studentName = s.fullName;
+        return {
+          ...s,
+          status: 'active' as const,
+          enrollmentStatus: 'active' as const,
+          enrolledAt: s.enrolledAt || new Date().toISOString(),
+        };
+      }
+      return s;
+    }));
+
+    const targetStudent = students.find(s => s.id === studentId);
+    if (targetStudent) {
+      addNotification({
+        recipientId: targetStudent.parentId,
+        role: 'parent',
+        title: `✅ تم تفعيل اشتراك ${targetStudent.fullName} رسمياً!`,
+        message: `تم اعتماد وتفعيل اشتراك ${targetStudent.fullName} من قبل الإدارة. انتقل الطفل الآن تلقائياً إلى قائمة «الأبناء النشطون» ويمكنه بدء رحلة الحفظ والتدبر فوراً.`,
+        type: 'system',
+      });
+    }
+
+    notifyToast(`تم تفعيل اشتراك الطالب "${studentName || 'الطفل'}" ونقله للأبناء النشطين بنجاح`);
   };
 
   const enrollChildInProgram = (studentId: string, programId: string) => {
-    setStudents(prev => prev.map(s => s.id === studentId ? { ...s, currentProgramId: programId } : s));
+    const selectedProgram = programs.find(p => p.id === programId);
+    setStudents(prev => prev.map(s => {
+      if (s.id === studentId) {
+        return {
+          ...s,
+          currentProgramId: programId,
+          status: 'pending_payment' as const,
+          enrollmentStatus: 'pending_payment' as const,
+          enrolledAt: new Date().toISOString(),
+        };
+      }
+      return s;
+    }));
+    notifyToast(`تم اختيار ${selectedProgram ? selectedProgram.name : 'البرنامج القرآني'} للطفل — يرجى استكمال الدفع`);
   };
 
   // Payment Processing
@@ -386,8 +518,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setPayments(prev => [newPayment, ...prev]);
 
-    // Update students to active status and enrolled
-    setStudents(prev => prev.map(s => data.studentIds.includes(s.id) ? { ...s, status: 'active', enrolledAt: new Date().toISOString() } : s));
+    // Update students to pending_activation status upon payment (awaiting admin activation)
+    setStudents(prev => prev.map(s => data.studentIds.includes(s.id) ? { 
+      ...s, 
+      status: 'pending_payment', 
+      enrollmentStatus: 'pending_activation', 
+      enrolledAt: new Date().toISOString() 
+    } : s));
 
     // Update promo capacity count
     setPricing(prev => ({
@@ -777,9 +914,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         badges,
         registerParent,
         loginParent,
+        logoutParent,
         addChild,
         updateChild,
         deleteChild,
+        archiveChild,
+        restoreChild,
+        graduateChild,
+        activateChildByAdmin,
         enrollChildInProgram,
         processPayment,
         submitStudentAudio,

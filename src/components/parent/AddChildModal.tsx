@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, UserPlus, Sparkles, Calendar, User, Heart } from 'lucide-react';
+import { X, UserPlus, Sparkles, Calendar, User, Heart, Trash2, Archive, GraduationCap, AlertCircle } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StudentUser } from '../../types';
 
@@ -14,7 +14,7 @@ export const AddChildModal: React.FC<AddChildModalProps> = ({
   onClose,
   editingChild,
 }) => {
-  const { addChild, updateChild, ageGroups, activeParent } = useApp();
+  const { addChild, updateChild, deleteChild, archiveChild, graduateChild, ageGroups, activeParent } = useApp();
 
   const [fullName, setFullName] = useState(editingChild?.fullName || '');
   const [age, setAge] = useState<number>(editingChild?.age || 8);
@@ -72,7 +72,12 @@ export const AddChildModal: React.FC<AddChildModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-fade-in">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-fade-in"
+    >
       <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-stone-200 overflow-hidden flex flex-col">
         {/* Header */}
         <div className="px-6 py-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
@@ -90,8 +95,11 @@ export const AddChildModal: React.FC<AddChildModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white border border-stone-200 text-stone-400 hover:text-stone-700 flex items-center justify-center cursor-pointer"
+            title="إغلاق النافذة"
+            aria-label="إغلاق"
+            className="w-8 h-8 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-stone-400 hover:text-stone-700 flex items-center justify-center cursor-pointer transition-colors shadow-2xs"
           >
             <X className="w-4 h-4" />
           </button>
@@ -200,6 +208,56 @@ export const AddChildModal: React.FC<AddChildModalProps> = ({
               })}
             </div>
           </div>
+
+          {editingChild && (
+            <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200 text-right space-y-2.5">
+              <span className="text-xs font-bold text-stone-700 block">إدارة حالة ملف الطفل:</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(`هل ترغب في أرشفة ملف "${editingChild.fullName}"؟ سيتم إخفاء الملف مع الاحتفاظ بكامل السجلات والمدفوعات والتلاوات بأمان.`)) {
+                      archiveChild(editingChild.id);
+                      onClose();
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-xl border border-stone-200 text-stone-700 bg-white hover:bg-stone-100 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+                  title="إخفاء الملف القديم مع الاحتفاظ ببياناته"
+                >
+                  <Archive className="w-3.5 h-3.5 text-stone-500" />
+                  <span>أرشفة الملف</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    graduateChild(editingChild.id);
+                    onClose();
+                  }}
+                  className="px-3 py-1.5 rounded-xl border border-purple-200 text-purple-800 bg-purple-50 hover:bg-purple-100 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+                  title="توثيق إنهاء الطفل للدورة مع بقائه في النظام"
+                >
+                  <GraduationCap className="w-3.5 h-3.5 text-purple-600" />
+                  <span>إكمال وتخرج 🎓</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(`هل أنت متأكد من حذف ملف "${editingChild.fullName}"؟\nملاحظة: خيار الحذف مخصص للطفل الذي أُضيف بالخطأ ولم يبدأ أي شيء.`)) {
+                      deleteChild(editingChild.id);
+                      onClose();
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 mr-auto"
+                  title="مخصص للأطفال المضافين بالخطأ"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>حذف (مُضاف بالخطأ)</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="pt-2 flex items-center justify-end gap-3">
             <button

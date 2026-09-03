@@ -40,23 +40,61 @@ export const INITIAL_AGE_GROUPS: AgeGroupConfig[] = [
   },
 ];
 
-export const INITIAL_PROGRAM: QuranProgram = {
-  id: 'moayasha-3months',
-  name: 'برنامج التربية بالمعايشة القرآنية',
-  tagline: 'رحلة ابنك ليعيش مع القرآن — يحفظ، يفهم، يتدبر، ويطبق',
-  coachName: 'كوتش عمر فارس',
-  durationMonths: 3,
-  description: 'برنامج تربوي قرآني شامل للأبناء من 6 إلى 15 سنة يهدف إلى نقل الطفل واليافع من مجرد الحفظ المجرد إلى المعايشة الحية لآيات القرآن في تفاصيل يومه وحياته.',
-  targetAgeGroupIds: ['ag-6-9', 'ag-10-12', 'ag-13-15'],
-  surahs: ['سورة العلق', 'سورة المزمل', 'سورة المدثر'],
-  monthlyTadabburSessions: 4,
-  monthlyMemorizationSessions: 8,
-  stages: ['أتعلم', 'أحفظ', 'أفهم', 'أتدبر', 'أطبق', 'أشارك أسرتي'],
-  status: 'active',
-  standardPriceMonthly: 2000,
-  promotionalPriceMonthly: 1500,
-  siblingPriceMonthly: 1250,
-};
+export const INITIAL_PROGRAMS: QuranProgram[] = [
+  {
+    id: 'moayasha-3months',
+    name: 'برنامج التربية بالمعايشة القرآنية (المستوى التأسيسي)',
+    tagline: 'رحلة ابنك ليعيش مع القرآن — يحفظ، يفهم، يتدبر، ويطبق',
+    coachName: 'كوتش عمر فارس',
+    durationMonths: 3,
+    description: 'برنامج تربوي قرآني شامل للأبناء من 6 إلى 15 سنة يهدف إلى نقل الطفل واليافع من مجرد الحفظ المجرد إلى المعايشة الحية لآيات القرآن في تفاصيل يومه وحياته (سور: العلق، المزمل، المدثر).',
+    targetAgeGroupIds: ['ag-6-9', 'ag-10-12', 'ag-13-15'],
+    surahs: ['سورة العلق', 'سورة المزمل', 'سورة المدثر'],
+    monthlyTadabburSessions: 4,
+    monthlyMemorizationSessions: 8,
+    stages: ['أتعلم', 'أحفظ', 'أفهم', 'أتدبر', 'أطبق', 'أشارك أسرتي'],
+    status: 'active',
+    standardPriceMonthly: 2000,
+    promotionalPriceMonthly: 1500,
+    siblingPriceMonthly: 1250,
+  },
+  {
+    id: 'moayasha-level2',
+    name: 'برنامج المعايشة القرآنية (المستوى الثاني - سور التزكية)',
+    tagline: 'الارتقاء الإيماني وبناء القيم من خلال سور القيامة والإنسان والمرسلات',
+    coachName: 'كوتش عمر فارس',
+    durationMonths: 3,
+    description: 'المستوى المتقدم للأبناء الذين أتموا المستوى التأسيسي، للتعمق في سور القيامة والإنسان والمرسلات مع تطبيقات سلوكية أسرية ومجتمعية متقدمة.',
+    targetAgeGroupIds: ['ag-6-9', 'ag-10-12', 'ag-13-15'],
+    surahs: ['سورة القيامة', 'سورة الإنسان', 'سورة المرسلات'],
+    monthlyTadabburSessions: 4,
+    monthlyMemorizationSessions: 8,
+    stages: ['أتعلم', 'أحفظ', 'أفهم', 'أتدبر', 'أطبق', 'أشارك أسرتي'],
+    status: 'active',
+    standardPriceMonthly: 2000,
+    promotionalPriceMonthly: 1500,
+    siblingPriceMonthly: 1250,
+  },
+  {
+    id: 'tadabbur-amma',
+    name: 'رحلة تدبر ومعايشة جزء عمّ كاملاً',
+    tagline: 'تثبيت الحفظ وفهم معاني جزء النبأ في حلقات تفاعلية ماتعة',
+    coachName: 'فريق المعايشة القرآنية',
+    durationMonths: 6,
+    description: 'برنامج متكامل لحفظ وتدبر قصار السور من جزء عمّ، يربط الطفل بالحقائق الكبرى كاليوم الآخر والتوحيد والنعم الربانية.',
+    targetAgeGroupIds: ['ag-6-9', 'ag-10-12', 'ag-13-15'],
+    surahs: ['النبأ', 'النازعات', 'عبس', 'التكوير', 'الانفطار'],
+    monthlyTadabburSessions: 4,
+    monthlyMemorizationSessions: 8,
+    stages: ['أتعلم', 'أحفظ', 'أفهم', 'أتدبر', 'أطبق', 'أشارك أسرتي'],
+    status: 'active',
+    standardPriceMonthly: 2000,
+    promotionalPriceMonthly: 1500,
+    siblingPriceMonthly: 1250,
+  },
+];
+
+export const INITIAL_PROGRAM: QuranProgram = INITIAL_PROGRAMS[0];
 
 export const INITIAL_SURAHS: SurahPlan[] = [
   {

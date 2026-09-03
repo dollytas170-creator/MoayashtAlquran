@@ -21,6 +21,19 @@ import {
   AlertCircle,
   Plus,
   Play,
+  LogOut,
+  Trash2,
+  AlertTriangle,
+  Archive,
+  GraduationCap,
+  RotateCcw,
+  ShieldCheck,
+  Check,
+  Info,
+  BookOpenCheck,
+  X,
+  Eye,
+  HelpCircle,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -53,6 +66,12 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     payments,
     notifications,
     audioSubmissions,
+    deleteChild,
+    archiveChild,
+    restoreChild,
+    graduateChild,
+    enrollChildInProgram,
+    logoutParent,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<
@@ -60,10 +79,71 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   >('children');
 
   const [familyNoteInput, setFamilyNoteInput] = useState<{ [id: string]: string }>({});
+  
+  // Child Lifecycle Modal States - defaults to 'all' so all registered children appear immediately
+  const [childFilter, setChildFilter] = useState<'all' | 'active' | 'pending' | 'graduated' | 'archived'>('all');
+  const [childToDelete, setChildToDelete] = useState<StudentUser | null>(null);
+  const [childToArchive, setChildToArchive] = useState<StudentUser | null>(null);
+  const [childToGraduate, setChildToGraduate] = useState<StudentUser | null>(null);
+  const [childToEnroll, setChildToEnroll] = useState<StudentUser | null>(null);
+  const [childToViewStatus, setChildToViewStatus] = useState<StudentUser | null>(null);
+  const [selectedNewProgramId, setSelectedNewProgramId] = useState<string>('');
+  const [gradNote, setGradNote] = useState<string>('');
 
   const parentChildren = students.filter(
     (s) => s.parentId === activeParent?.id || activeParent === null
   );
+
+  // Active children: children who have completed activation and are fully active in program
+  // (Or if someone still has legacy status active or no pending enrollment status)
+  const isChildActive = (c: StudentUser) => {
+    if (c.status === 'graduated' || c.status === 'archived' || c.status === 'inactive') return false;
+    if (c.enrollmentStatus) {
+      return c.enrollmentStatus === 'active';
+    }
+    return c.status === 'active';
+  };
+
+  const isChildPending = (c: StudentUser) => {
+    if (c.status === 'graduated' || c.status === 'archived' || c.status === 'inactive') return false;
+    return (
+      c.enrollmentStatus === 'pending_subscription' ||
+      c.enrollmentStatus === 'pending_payment' ||
+      c.enrollmentStatus === 'pending_activation'
+    );
+  };
+
+  const activeChildren = parentChildren.filter(isChildActive);
+  const pendingChildren = parentChildren.filter(isChildPending);
+  const graduatedChildren = parentChildren.filter((c) => c.status === 'graduated');
+  const archivedChildren = parentChildren.filter((c) => c.status === 'archived');
+
+  const displayedChildren = parentChildren.filter((child) => {
+    if (childFilter === 'all') return child.status !== 'archived';
+    if (childFilter === 'active') return isChildActive(child);
+    if (childFilter === 'pending') return isChildPending(child);
+    if (childFilter === 'graduated') return child.status === 'graduated';
+    if (childFilter === 'archived') return child.status === 'archived';
+    return true;
+  });
+
+  const getChildHistoryStats = (childId: string) => {
+    const tasksCount = tasks.filter((t) => t.studentId === childId).length;
+    const audiosCount = audioSubmissions.filter((a) => a.studentId === childId).length;
+    const reportsCount = reports.filter((r) => r.studentId === childId).length;
+    const familyActivitiesCount = familyActivities.filter((a) => a.studentId === childId).length;
+    const paymentsCount = payments.filter((p) => p.studentIds.includes(childId)).length;
+    const total = tasksCount + audiosCount + reportsCount + familyActivitiesCount + paymentsCount;
+    return {
+      hasHistory: total > 0,
+      tasksCount,
+      audiosCount,
+      reportsCount,
+      familyActivitiesCount,
+      paymentsCount,
+      total,
+    };
+  };
 
   const currentChild = activeStudent || (parentChildren.length > 0 ? parentChildren[0] : null);
 
@@ -122,160 +202,612 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 <span>إدارة الاشتراكات والدفع</span>
               </button>
             )}
-          </div>
-        </div>
 
-        {/* Child Selector Tabs Bar if children exist */}
-        {parentChildren.length > 0 && (
-          <div className="max-w-7xl mx-auto mt-6 pt-4 border-t border-stone-100 flex items-center justify-between">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              <span className="text-xs font-bold text-stone-400 shrink-0">الأبناء:</span>
-              {parentChildren.map((child) => {
-                const isSelected = currentChild?.id === child.id;
-                return (
-                  <button
-                    key={child.id}
-                    type="button"
-                    onClick={() => setActiveStudentId(child.id)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
-                      isSelected
-                        ? 'bg-emerald-700 text-white shadow-xs'
-                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                    }`}
-                  >
-                    <span>{child.fullName}</span>
-                    <span
-                      className={`text-[10px] px-1.5 py-0.2 rounded-md ${
-                        isSelected ? 'bg-emerald-800 text-emerald-100' : 'bg-stone-200 text-stone-600'
-                      }`}
-                    >
-                      {child.age} سنة
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {currentChild && (
+            {activeParent && (
               <button
                 type="button"
-                onClick={() => onGoToStudentView(currentChild.id)}
-                className="text-xs font-bold text-emerald-700 hover:text-emerald-900 hover:underline flex items-center gap-1 shrink-0"
+                onClick={logoutParent}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer"
+                title="تسجيل الخروج من حساب ولي الأمر"
               >
-                <span>دخول بوابة الابن «رحلتي»</span>
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <LogOut className="w-4 h-4" />
+                <span>تسجيل الخروج</span>
               </button>
             )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 sm:gap-2 border-b border-stone-200 mb-8 overflow-x-auto pb-2">
-          {[
-            { id: 'children', label: 'أطفالي المسجلون', icon: Users },
-            { id: 'progress', label: 'التقدم والحفظ والتدبر', icon: TreeDeciduous },
-            { id: 'family_activities', label: 'مع الأسرة (الأنشطة الأسرية)', icon: HeartHandshake },
-            { id: 'sessions', label: 'الجلسات والتقويم', icon: Calendar },
-            { id: 'reports', label: 'تقارير المتابعة التربوية', icon: FileText },
-            { id: 'payments', label: 'الاشتراكات والفواتير', icon: CreditCard },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
-                  isActive
-                    ? 'bg-emerald-700 text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center justify-between border-b border-stone-200 mb-8 pb-2 gap-4">
+          <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1">
+            {[
+              { id: 'children', label: 'أطفالي المسجلون', icon: Users },
+              { id: 'progress', label: 'التقدم والحفظ والتدبر', icon: TreeDeciduous },
+              { id: 'family_activities', label: 'مع الأسرة (الأنشطة الأسرية)', icon: HeartHandshake },
+              { id: 'sessions', label: 'الجلسات والتقويم', icon: Calendar },
+              { id: 'reports', label: 'تقارير المتابعة التربوية', icon: FileText },
+              { id: 'payments', label: 'الاشتراكات والفواتير', icon: CreditCard },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+                    isActive
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                  {isActive && activeTab !== 'children' && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTab('children');
+                      }}
+                      title="إغلاق هذا التبويب والعودة لقائمة الأطفال"
+                      className="mr-1 p-0.5 rounded-full hover:bg-emerald-800 text-emerald-100 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeTab !== 'children' && (
+            <button
+              type="button"
+              onClick={() => setActiveTab('children')}
+              className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+              title="إغلاق التبويب والعودة لقائمة الأطفال"
+            >
+              <X className="w-4 h-4 text-stone-500" />
+              <span>إغلاق التبويب</span>
+            </button>
+          )}
         </div>
 
         {/* Tab 1: Children List */}
         {activeTab === 'children' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-bold text-stone-900">الأطفال المسجلون في حسابك</h3>
-                <p className="text-xs text-stone-500">إدارة ملفات الأبناء ومساراتهم العمرية والاشتراكات</p>
+                <h3 className="text-xl font-black text-stone-900 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-emerald-700" />
+                  <span>قائمة أطفالي المسجلون</span>
+                </h3>
+                <p className="text-xs text-stone-500 mt-1">
+                  عرض ومتابعة الأبناء المسجلين وحالة التحاقهم بالبرنامج (انتظار الاشتراك، بانتظار السداد، بانتظار التفعيل، أو مشترك ونشط)
+                </p>
               </div>
               <button
                 type="button"
                 onClick={onOpenAddChild}
-                className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold cursor-pointer flex items-center gap-1.5 shadow-xs"
               >
                 <Plus className="w-4 h-4" />
                 <span>إضافة طفل</span>
               </button>
             </div>
 
-            {parentChildren.length === 0 ? (
+            {/* Child Selector Tabs Bar with "دخول بوابة الابن «رحلتي»" directly under قائمة أطفالي المسجلون */}
+            {parentChildren.length > 0 && (
+              <div className="bg-white rounded-2xl p-4 border border-stone-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
+                  <span className="text-xs font-bold text-stone-500 shrink-0">الأبناء:</span>
+                  {parentChildren.map((child) => {
+                    const isSelected = currentChild?.id === child.id;
+                    return (
+                      <button
+                        key={child.id}
+                        type="button"
+                        onClick={() => setActiveStudentId(child.id)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
+                          isSelected
+                            ? 'bg-emerald-700 text-white shadow-xs'
+                            : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                        }`}
+                      >
+                        <span>{child.fullName}</span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.2 rounded-md ${
+                            isSelected ? 'bg-emerald-800 text-emerald-100' : 'bg-stone-200 text-stone-600'
+                          }`}
+                        >
+                          {child.age} سنة
+                        </span>
+                        <span
+                          className={`text-[9px] px-1.5 py-0.2 rounded-md font-normal ${
+                            isSelected
+                              ? 'bg-emerald-900/60 text-emerald-100'
+                              : child.enrollmentStatus === 'pending_subscription'
+                              ? 'bg-blue-100 text-blue-800'
+                              : child.enrollmentStatus === 'pending_payment'
+                              ? 'bg-amber-100 text-amber-800'
+                              : child.enrollmentStatus === 'pending_activation'
+                              ? 'bg-orange-100 text-orange-800'
+                              : 'bg-emerald-100 text-emerald-800'
+                          }`}
+                        >
+                          {child.status === 'graduated'
+                            ? 'خريج'
+                            : child.status === 'archived'
+                            ? 'مؤرشف'
+                            : child.enrollmentStatus === 'pending_subscription'
+                            ? 'انتظار الاشتراك'
+                            : child.enrollmentStatus === 'pending_payment'
+                            ? 'بانتظار السداد'
+                            : child.enrollmentStatus === 'pending_activation'
+                            ? 'بانتظار التفعيل'
+                            : 'مشترك ونشط'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {currentChild && (
+                  <button
+                    type="button"
+                    onClick={() => onGoToStudentView(currentChild.id)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all cursor-pointer shrink-0 shadow-2xs"
+                  >
+                    <span>دخول بوابة الابن «رحلتي»</span>
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Lifecycle Semantic Guide Banner */}
+            <div className="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4 text-xs">
+              <div className="flex items-center gap-2 font-bold text-emerald-950 mb-2">
+                <Info className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span>دليل إدارة ملفات الأبناء وتتبع حالة الالتحاق:</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-stone-700">
+                <div className="bg-white/80 rounded-xl p-2.5 border border-emerald-100/60">
+                  <span className="font-bold text-blue-800 block mb-0.5">⏳ مراحل الالتحاق:</span>
+                  <span>يبدأ الطفل بـ (انتظار الاشتراك) ثم (بانتظار السداد) ثم (بانتظار التفعيل) حتى اعتماده.</span>
+                </div>
+                <div className="bg-white/80 rounded-xl p-2.5 border border-emerald-100/60">
+                  <span className="font-bold text-stone-800 block mb-0.5">📦 أرشفة:</span>
+                  <span>إخفاء ملف الطفل مع الاحتفاظ الكامل بتاريخه وتلاواته ومدفوعاته بأمان.</span>
+                </div>
+                <div className="bg-white/80 rounded-xl p-2.5 border border-emerald-100/60">
+                  <span className="font-bold text-purple-800 block mb-0.5">🎓 تخرج / إكمال برنامج:</span>
+                  <span>الطفل أنهى الدورة بنجاح ومؤهل للانتقال للمستوى القرآني التالي مباشرة.</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Status Filter Tabs */}
+            <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 pb-3">
+              <button
+                type="button"
+                onClick={() => setChildFilter('all')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  childFilter === 'all'
+                    ? 'bg-stone-900 text-white shadow-xs'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                <span>جميع أطفالي المسجلون</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                  childFilter === 'all' ? 'bg-stone-800 text-stone-100' : 'bg-stone-200 text-stone-700'
+                }`}>
+                  {parentChildren.filter(c => c.status !== 'archived').length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setChildFilter('pending')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  childFilter === 'pending'
+                    ? 'bg-amber-600 text-white shadow-xs'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                <span>انتظار الاشتراك / السداد / التفعيل ⏳</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                  childFilter === 'pending' ? 'bg-amber-700 text-amber-100' : 'bg-stone-200 text-stone-700'
+                }`}>
+                  {pendingChildren.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setChildFilter('active')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  childFilter === 'active'
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                <span>المشتركون والنشطون ✓</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                  childFilter === 'active' ? 'bg-emerald-800 text-emerald-100' : 'bg-stone-200 text-stone-700'
+                }`}>
+                  {activeChildren.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setChildFilter('graduated')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  childFilter === 'graduated'
+                    ? 'bg-purple-700 text-white shadow-xs'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                <span>المتخرجون 🎓</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                  childFilter === 'graduated' ? 'bg-purple-800 text-purple-100' : 'bg-stone-200 text-stone-700'
+                }`}>
+                  {graduatedChildren.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setChildFilter('archived')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  childFilter === 'archived'
+                    ? 'bg-stone-800 text-white shadow-xs'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                <span>الأرشيف 📦</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                  childFilter === 'archived' ? 'bg-stone-900 text-stone-200' : 'bg-stone-200 text-stone-700'
+                }`}>
+                  {archivedChildren.length}
+                </span>
+              </button>
+
+              {childFilter !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => setChildFilter('all')}
+                  className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 flex items-center gap-1 cursor-pointer transition-colors"
+                  title="إغلاق التصفية وعرض جميع الأطفال"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>إغلاق التصفية</span>
+                </button>
+              )}
+            </div>
+
+            {displayedChildren.length === 0 ? (
               <EmptyState
-                icon={Users}
-                title="لا يوجد أطفال مضافون حتى الآن"
-                description="ابدأ بإضافة طفلك الأول لاختيار الفئة العمرية وتخصيص رحلته مع القرآن الكريم."
-                actionText="إضافة طفل"
-                onAction={onOpenAddChild}
+                icon={childFilter === 'archived' ? Archive : childFilter === 'graduated' ? GraduationCap : Users}
+                title={
+                  childFilter === 'archived'
+                    ? 'الأرشيف فارغ'
+                    : childFilter === 'graduated'
+                    ? 'لا يوجد خريجون حتى الآن'
+                    : 'لا يوجد أطفال مسجلون في هذه القائمة'
+                }
+                description={
+                  childFilter === 'archived'
+                    ? 'الملفات التي تقوم بأرشفتها لحفظ تاريخها ستظهر هنا.'
+                    : childFilter === 'graduated'
+                    ? 'الأطفال الذين يتمون برامجهم القرآنية سيوثق تخرجهم هنا ويمكنهم الالتحاق ببرامج متقدمة.'
+                    : 'يمكنك إضافة طفل جديد واختيار برنامجه ومتابعة خطوات تفعيله وسداده بسهولة.'
+                }
+                actionText={childFilter !== 'archived' && childFilter !== 'graduated' ? 'إضافة طفل' : undefined}
+                onAction={childFilter !== 'archived' && childFilter !== 'graduated' ? onOpenAddChild : undefined}
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {parentChildren.map((child) => (
-                  <div
-                    key={child.id}
-                    className="bg-white rounded-2xl p-6 border border-stone-200 shadow-xs hover:border-emerald-300 transition-all flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-lg">
-                          {child.fullName.charAt(0)}
+                {displayedChildren.map((child) => {
+                  const currentProg = programs.find((p) => p.id === child.currentProgramId) || programs[0];
+                  const isGraduated = child.status === 'graduated';
+                  const isArchived = child.status === 'archived';
+                  const stats = getChildHistoryStats(child.id);
+                  const enrollmentStatus = child.enrollmentStatus || (isChildActive(child) ? 'active' : 'pending_subscription');
+
+                  return (
+                    <div
+                      key={child.id}
+                      className={`bg-white rounded-2xl p-6 border shadow-xs transition-all flex flex-col justify-between ${
+                        isGraduated
+                          ? 'border-purple-200 bg-linear-to-b from-purple-50/30 to-white'
+                          : isArchived
+                          ? 'border-stone-300 bg-stone-50/50 opacity-90'
+                          : 'border-stone-200 hover:border-emerald-300'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-start justify-between mb-4">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg ${
+                            isGraduated
+                              ? 'bg-purple-100 text-purple-800'
+                              : isArchived
+                              ? 'bg-stone-200 text-stone-700'
+                              : 'bg-emerald-100 text-emerald-800'
+                          }`}>
+                            {child.fullName.charAt(0)}
+                          </div>
+                          
+                          {/* Semantic Status Badge & Lifecycle */}
+                          {isGraduated ? (
+                            <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-purple-100 text-purple-900 flex items-center gap-1 border border-purple-200">
+                              <GraduationCap className="w-3.5 h-3.5" />
+                              <span>خريج البرنامج 🎓</span>
+                            </span>
+                          ) : isArchived ? (
+                            <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-stone-200 text-stone-800 flex items-center gap-1 border border-stone-300">
+                              <Archive className="w-3.5 h-3.5" />
+                              <span>ملف مؤرشف 📦</span>
+                            </span>
+                          ) : enrollmentStatus === 'pending_subscription' ? (
+                            <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-900 border border-blue-200 flex items-center gap-1 shadow-2xs">
+                              <Clock className="w-3 h-3 text-blue-700" />
+                              <span>انتظار الاشتراك</span>
+                            </span>
+                          ) : enrollmentStatus === 'pending_payment' ? (
+                            <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1 shadow-2xs">
+                              <CreditCard className="w-3 h-3 text-amber-700" />
+                              <span>بانتظار السداد</span>
+                            </span>
+                          ) : enrollmentStatus === 'pending_activation' ? (
+                            <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-orange-100 text-orange-900 border border-orange-200 flex items-center gap-1 shadow-2xs">
+                              <Clock className="w-3 h-3 text-orange-700 animate-pulse" />
+                              <span>بانتظار التفعيل</span>
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1 shadow-2xs">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                              <span>مشترك ونشط ✓</span>
+                            </span>
+                          )}
                         </div>
-                        <span
-                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold ${
-                            child.status === 'active'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-amber-100 text-amber-900'
-                          }`}
-                        >
-                          {child.status === 'active' ? 'مشترك ونشط ✓' : 'في انتظار سداد الاشتراك'}
-                        </span>
+
+                        <h4 className="text-lg font-bold text-stone-900 mb-1">{child.fullName}</h4>
+                        
+                        <div className="space-y-1.5 text-xs text-stone-600 mb-4">
+                          <p>العمر: <strong className="text-stone-800">{child.age} سنة</strong> ({child.gender === 'male' ? 'ذكر' : 'أنثى'})</p>
+                          <p>البرنامج الحالي: <strong className="text-stone-800">{currentProg?.name || 'برنامج معايشة القرآن'}</strong></p>
+                          
+                          {/* Specific Enrollment Status Helper Bar */}
+                          {!isGraduated && !isArchived && (
+                            <div className={`mt-3 p-2.5 rounded-xl border text-[11px] flex items-center justify-between gap-2 ${
+                              enrollmentStatus === 'pending_subscription'
+                                ? 'bg-blue-50/80 border-blue-200 text-blue-950'
+                                : enrollmentStatus === 'pending_payment'
+                                ? 'bg-amber-50/80 border-amber-200 text-amber-950'
+                                : enrollmentStatus === 'pending_activation'
+                                ? 'bg-orange-50/80 border-orange-200 text-orange-950'
+                                : 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
+                            }`}>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-bold text-stone-900">حالة الالتحاق:</span>
+                                {enrollmentStatus === 'pending_subscription' && (
+                                  <span className="text-blue-700 font-bold inline-flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>انتظار الاشتراك</span>
+                                  </span>
+                                )}
+                                {enrollmentStatus === 'pending_payment' && (
+                                  <span className="text-amber-700 font-bold inline-flex items-center gap-1">
+                                    <CreditCard className="w-3 h-3" />
+                                    <span>بانتظار السداد</span>
+                                  </span>
+                                )}
+                                {enrollmentStatus === 'pending_activation' && (
+                                  <div className="flex flex-col">
+                                    <span className="text-orange-700 font-bold inline-flex items-center gap-1">
+                                      <Clock className="w-3 h-3 animate-pulse" />
+                                      <span>بانتظار التفعيل</span>
+                                    </span>
+                                    <span className="text-[10px] text-orange-900 font-semibold">
+                                      (الحالة تقررها الإدارة بعد دفع الرسوم)
+                                    </span>
+                                  </div>
+                                )}
+                                {enrollmentStatus === 'active' && (
+                                  <span className="text-emerald-700 font-bold inline-flex items-center gap-1">
+                                    <CheckCircle2 className="w-3 h-3" />
+                                    <span>مشترك ونشط في الحلقات</span>
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setChildToViewStatus(child)}
+                                className="text-[10px] font-bold text-stone-600 hover:text-stone-900 underline flex items-center gap-0.5 cursor-pointer shrink-0"
+                                title="عرض مسار وتفاصيل حالة الطلب"
+                              >
+                                <Eye className="w-3 h-3" />
+                                <span>عرض حالة الطلب</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {isGraduated && (
+                            <div className="mt-2 p-2.5 bg-purple-50 rounded-xl border border-purple-100 text-[11px] text-purple-900">
+                              <p className="font-bold flex items-center gap-1 mb-1">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-purple-700" />
+                                <span>أتم الدورة بنجاح ومستعد لبرنامج متقدم</span>
+                              </p>
+                              {child.graduationNote && (
+                                <p className="text-purple-700 italic">"{child.graduationNote}"</p>
+                              )}
+                            </div>
+                          )}
+
+                          {isArchived && (
+                            <div className="mt-2 p-2.5 bg-stone-100 rounded-xl border border-stone-200 text-[11px] text-stone-700">
+                              <p className="font-semibold flex items-center gap-1">
+                                <ShieldCheck className="w-3.5 h-3.5 text-stone-600" />
+                                <span>سجل التلاوات والمهام والمدفوعات محفوظ بالكامل</span>
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      <h4 className="text-lg font-bold text-stone-900 mb-1">{child.fullName}</h4>
-                      <div className="space-y-1 text-xs text-stone-500">
-                        <p>العمر: <strong className="text-stone-800">{child.age} سنة</strong> ({child.gender === 'male' ? 'ذكر' : 'أنثى'})</p>
-                        <p>البرنامج: <strong className="text-stone-800">برنامج التربية بالمعايشة القرآنية</strong></p>
+                      {/* Card Action Buttons */}
+                      <div className="mt-4 pt-4 border-t border-stone-100 space-y-2.5">
+                        {/* Context-aware buttons according to enrollment status */}
+                        {!isGraduated && !isArchived && enrollmentStatus === 'pending_subscription' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              enrollChildInProgram(child.id, child.currentProgramId || programs[0].id);
+                              onGoToCheckout();
+                            }}
+                            className="w-full py-2.5 px-3 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>اشترك الآن</span>
+                          </button>
+                        )}
+
+                        {!isGraduated && !isArchived && enrollmentStatus === 'pending_payment' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveStudentId(child.id);
+                              onGoToCheckout();
+                            }}
+                            className="w-full py-2.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <CreditCard className="w-3.5 h-3.5" />
+                            <span>استكمال الدفع</span>
+                          </button>
+                        )}
+
+                        {!isGraduated && !isArchived && enrollmentStatus === 'pending_activation' && (
+                          <div className="space-y-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setChildToViewStatus(child)}
+                              className="w-full py-2.5 px-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>عرض حالة الطلب</span>
+                            </button>
+                            <div className="flex items-center justify-center gap-1 text-[11px] text-orange-950 font-medium bg-orange-50/90 py-1 px-2 rounded-lg border border-orange-200/80 text-center">
+                              <Info className="w-3 h-3 text-orange-700 shrink-0" />
+                              <span>الحالة تقررها الإدارة بعد دفع الرسوم</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* If graduated, highlight Enroll in Next Program button */}
+                        {isGraduated && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setChildToEnroll(child);
+                              setSelectedNewProgramId(programs.find(p => p.id !== child.currentProgramId)?.id || programs[0].id);
+                            }}
+                            className="w-full py-2 px-3 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <BookOpenCheck className="w-3.5 h-3.5" />
+                            <span>الالتحاق ببرنامج قرآني جديد 🚀</span>
+                          </button>
+                        )}
+
+                        {/* If archived, highlight Restore button */}
+                        {isArchived && (
+                          <button
+                            type="button"
+                            onClick={() => restoreChild(child.id)}
+                            className="w-full py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>استعادة الملف إلى القائمة النشطة</span>
+                          </button>
+                        )}
+
+                        <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => onGoToStudentView(child.id)}
+                              className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-bold transition-colors cursor-pointer"
+                              title="فتح بوابة رحلتي للطالب"
+                            >
+                              دخول رحلتي
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onEditChild(child)}
+                              className="px-2.5 py-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-medium cursor-pointer"
+                              title="تعديل بيانات الطفل"
+                            >
+                              تعديل
+                            </button>
+                            {!isGraduated && !isArchived && (
+                              <button
+                                type="button"
+                                onClick={() => setChildToViewStatus(child)}
+                                className="px-2 py-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-medium cursor-pointer"
+                                title="عرض حالة الطلب"
+                              >
+                                عرض حالة الطلب
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            {/* Graduation button for active students */}
+                            {!isGraduated && !isArchived && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setChildToGraduate(child);
+                                  setGradNote('أتم الدورة القرآنية بنجاح واجتاز تقييمات الحفظ والتدبر بتفوق');
+                                }}
+                                className="p-1.5 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 text-xs font-medium transition-colors cursor-pointer"
+                                title="إكمال البرنامج والتخرج 🎓"
+                              >
+                                <GraduationCap className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
+                            {/* Archive button */}
+                            {!isArchived && (
+                              <button
+                                type="button"
+                                onClick={() => setChildToArchive(child)}
+                                className="p-1.5 rounded-lg border border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100 text-xs font-medium transition-colors cursor-pointer"
+                                title="أرشفة الملف (لحفظ تاريخه وإخفائه) 📦"
+                              >
+                                <Archive className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
+                            {/* Delete button (specifically for accidentally added children) */}
+                            <button
+                              type="button"
+                              onClick={() => setChildToDelete(child)}
+                              className="p-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-medium transition-colors cursor-pointer"
+                              title="حذف (مخصص للأطفال المضافين بالخطأ)"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="mt-6 pt-4 border-t border-stone-100 flex items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onGoToStudentView(child.id)}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-bold transition-colors cursor-pointer"
-                      >
-                        دخول رحلتي
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onEditChild(child)}
-                        className="px-3 py-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-medium cursor-pointer"
-                      >
-                        تعديل البيانات
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -294,6 +826,25 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               />
             ) : (
               <div className="space-y-6">
+                {parentChildren.length > 1 && (
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-white p-3 rounded-2xl border border-stone-200">
+                    <span className="text-xs font-bold text-stone-500 shrink-0">عرض تقدم الابن:</span>
+                    {parentChildren.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setActiveStudentId(c.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          currentChild.id === c.id
+                            ? 'bg-emerald-700 text-white shadow-xs'
+                            : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                        }`}
+                      >
+                        {c.fullName} ({c.age} سنة)
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {/* Child Summary Stats */}
                 <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-xs grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="text-center p-3 rounded-xl bg-emerald-50/60 border border-emerald-100">
@@ -375,6 +926,26 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 أنشطة وتطبيقات بسيطة لربط معاني الآيات بالبيت ومشاركتها مع الأبناء
               </p>
             </div>
+
+            {parentChildren.length > 1 && currentChild && (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-white p-3 rounded-2xl border border-stone-200">
+                <span className="text-xs font-bold text-stone-500 shrink-0">عرض أنشطة الابن:</span>
+                {parentChildren.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setActiveStudentId(c.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      currentChild.id === c.id
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                    }`}
+                  >
+                    {c.fullName} ({c.age} سنة)
+                  </button>
+                ))}
+              </div>
+            )}
 
             {childActivities.length === 0 ? (
               <EmptyState
@@ -632,6 +1203,566 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           </div>
         )}
       </div>
+
+      {/* Modal 1: Intelligent Delete Child Confirmation Modal */}
+      {childToDelete && (() => {
+        const stats = getChildHistoryStats(childToDelete.id);
+        return (
+          <div
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setChildToDelete(null);
+            }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs"
+          >
+            <div className="relative bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-stone-200 text-right animate-in fade-in zoom-in-95 duration-150">
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setChildToDelete(null)}
+                className="absolute top-5 left-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-colors cursor-pointer"
+                title="إغلاق النافذة"
+                aria-label="إغلاق"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold text-rose-800 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
+                  حذف = طفل أُضيف بالخطأ ولم يبدأ أي شيء
+                </span>
+              </div>
+
+              <h3 className="text-lg font-black text-stone-900 mb-2">
+                حذف ملف الطفل ({childToDelete.fullName})
+              </h3>
+
+              {stats.hasHistory ? (
+                <div className="space-y-4 mb-6">
+                  <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-950 space-y-2">
+                    <p className="font-bold flex items-center gap-1.5 text-amber-900 text-sm">
+                      <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                      <span>تنبيه هام للحفاظ على بيانات الطفل وعمليات الدفع!</span>
+                    </p>
+                    <p className="leading-relaxed">
+                      هذا الملف يحتوي على سجلات حقيقية تم حفظها في النظام:
+                    </p>
+                    <ul className="list-disc list-inside space-y-1 font-semibold text-amber-900 pr-1">
+                      {stats.audiosCount > 0 && <li>{stats.audiosCount} تسجيلات وتلاوات صوتية مسجلة</li>}
+                      {stats.tasksCount > 0 && <li>{stats.tasksCount} مهام قرآنية وتطبيقات عملية</li>}
+                      {stats.reportsCount > 0 && <li>{stats.reportsCount} تقارير تقييم دورية من المعلم والمشرف</li>}
+                      {stats.paymentsCount > 0 && <li>{stats.paymentsCount} عمليات اشتراك ودفع مسجلة</li>}
+                    </ul>
+                    <p className="leading-relaxed pt-1 text-stone-700 border-t border-amber-200/60">
+                      لحماية هذا الجهد وسجل المدفوعات من الضياع، يُرجى استخدام <strong>«الأرشفة»</strong> (لحفظ التاريخ وإخفائه) أو <strong>«إكمال البرنامج»</strong> (إذا أتم دورته). زر الحذف مخصص فقط للطفل المُضاف بالخطأ.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetId = childToDelete.id;
+                        setChildToDelete(null);
+                        archiveChild(targetId);
+                      }}
+                      className="w-full py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Archive className="w-4 h-4" />
+                      <span>أرشفة الملف بدلاً من الحذف (موصى به - حفظ كامل السجل)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetChild = childToDelete;
+                        setChildToDelete(null);
+                        setChildToGraduate(targetChild);
+                      }}
+                      className="w-full py-2.5 px-4 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <GraduationCap className="w-4 h-4 text-purple-700" />
+                      <span>توثيق تخرج وإكمال البرنامج</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3 mb-6 text-sm text-stone-600 leading-relaxed">
+                  <p>
+                    هذا الطفل أُضيف إلى حسابك ولم يبدأ أي جلسات أو تلاوات أو عمليات دفع مسجلة.
+                  </p>
+                  <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-600">
+                    ✓ يمكنك حذف هذا الملف بأمان دون التأثير على أي سجلات أو اشتراكات أخرى.
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between gap-3 pt-4 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={() => setChildToDelete(null)}
+                  className="px-4 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  إلغاء وإغلاق
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    deleteChild(childToDelete.id);
+                    setChildToDelete(null);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>{stats.hasHistory ? 'تأكيد الحذف النهائي على أي حال' : 'نعم، حذف الملف المضاف بالخطأ'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Modal 2: Archive Child Confirmation Modal */}
+      {childToArchive && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setChildToArchive(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs"
+        >
+          <div className="relative bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-stone-200 text-right animate-in fade-in zoom-in-95 duration-150">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setChildToArchive(null)}
+              className="absolute top-5 left-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-colors cursor-pointer"
+              title="إغلاق النافذة"
+              aria-label="إغلاق"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-stone-100 text-stone-700 flex items-center justify-center mb-4">
+              <Archive className="w-6 h-6" />
+            </div>
+            
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-stone-800 bg-stone-100 px-2 py-0.5 rounded-md border border-stone-200">
+                أرشفة = ملف قديم نريد إخفاءه مع الاحتفاظ بتاريخه
+              </span>
+            </div>
+
+            <h3 className="text-lg font-black text-stone-900 mb-2">
+              أرشفة ملف ({childToArchive.fullName})
+            </h3>
+            
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed mb-6">
+              سيتم نقل هذا الملف إلى قسم <strong>«الأرشيف»</strong> وإخفاؤه من القائمة اليومية النشطة، مع الحفاظ الكامل على:
+              <br />
+              <span className="block mt-2 font-medium text-emerald-800 space-y-1">
+                ✓ جميع التلاوات والتسجيلات الصوتية السابقة.<br />
+                ✓ كافة المهام والأنشطة الأسرية المكتملة.<br />
+                ✓ التقارير التقييمية وسجل عمليات الدفع والاشتراك.<br />
+                ✓ إمكانية استعادة الملف إلى القائمة النشطة بنقرة واحدة في أي وقت.
+              </span>
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
+              <button
+                type="button"
+                onClick={() => setChildToArchive(null)}
+                className="px-4 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold transition-colors cursor-pointer"
+              >
+                إلغاء وإغلاق
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  archiveChild(childToArchive.id);
+                  setChildToArchive(null);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Archive className="w-4 h-4" />
+                <span>تأكيد الأرشفة الآمنة</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 3: Graduate / Complete Program Modal */}
+      {childToGraduate && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setChildToGraduate(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs"
+        >
+          <div className="relative bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-stone-200 text-right animate-in fade-in zoom-in-95 duration-150">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setChildToGraduate(null)}
+              className="absolute top-5 left-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-colors cursor-pointer"
+              title="إغلاق النافذة"
+              aria-label="إغلاق"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-800 flex items-center justify-center mb-4">
+              <GraduationCap className="w-6 h-6" />
+            </div>
+            
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-purple-900 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200">
+                تخرج/إكمال برنامج = أنهى الدورة ويظل موجودًا ويمكنه الالتحاق ببرنامج آخر
+              </span>
+            </div>
+
+            <h3 className="text-lg font-black text-stone-900 mb-2">
+              توثيق تخرج وإكمال البرنامج ({childToGraduate.fullName}) 🎓
+            </h3>
+            
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed mb-4">
+              مبارك! سيتم توثيق إتمام <strong className="text-stone-900 font-bold">{childToGraduate.fullName}</strong> للبرنامج القرآني بنجاح، مع بقائه في النظام وإمكانية التسجيل في مسار أو مستوى متقدم في أي وقت.
+            </p>
+
+            <div className="space-y-3 mb-6">
+              <label className="block text-xs font-bold text-stone-700">
+                ملاحظة التخرج / تهنئة الإتمام:
+              </label>
+              <textarea
+                rows={2}
+                value={gradNote}
+                onChange={(e) => setGradNote(e.target.value)}
+                placeholder="أتم الدورة القرآنية بنجاح واجتاز تقييمات الحفظ والتدبر..."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 text-xs text-stone-800 outline-none resize-none"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
+              <button
+                type="button"
+                onClick={() => setChildToGraduate(null)}
+                className="px-4 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold transition-colors cursor-pointer"
+              >
+                إلغاء وإغلاق
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  graduateChild(childToGraduate.id, childToGraduate.currentProgramId, gradNote);
+                  const graduated = childToGraduate;
+                  setChildToGraduate(null);
+                  setChildFilter('graduated');
+                }}
+                className="px-5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <GraduationCap className="w-4 h-4" />
+                <span>توثيق التخرج وإتمام البرنامج</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 4: Enroll Graduated or Active Child in Another Program */}
+      {childToEnroll && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setChildToEnroll(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs"
+        >
+          <div className="relative bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-stone-200 text-right animate-in fade-in zoom-in-95 duration-150">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setChildToEnroll(null)}
+              className="absolute top-5 left-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-colors cursor-pointer"
+              title="إغلاق النافذة"
+              aria-label="إغلاق"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-800 flex items-center justify-center mb-4">
+              <BookOpenCheck className="w-6 h-6" />
+            </div>
+            
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-purple-900 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200">
+                الالتحاق ببرنامج جديد
+              </span>
+            </div>
+
+            <h3 className="text-lg font-black text-stone-900 mb-2">
+              تسجيل {childToEnroll.fullName} في مسار قرآني جديد
+            </h3>
+            
+            <p className="text-xs text-stone-600 leading-relaxed mb-4">
+              اختر البرنامج القرآني المناسب للمرحلة التالية من رحلة الابن:
+            </p>
+
+            <div className="space-y-3 mb-6 max-h-60 overflow-y-auto pr-1">
+              {programs.map((prog) => {
+                const isCurrent = prog.id === childToEnroll.currentProgramId;
+                const isSelected = (selectedNewProgramId || programs[0].id) === prog.id;
+                return (
+                  <div
+                    key={prog.id}
+                    onClick={() => setSelectedNewProgramId(prog.id)}
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer text-right ${
+                      isSelected
+                        ? 'border-purple-600 bg-purple-50/50 shadow-xs ring-1 ring-purple-600'
+                        : 'border-stone-200 hover:border-purple-200 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-stone-900">{prog.name}</span>
+                        {isCurrent && (
+                          <span className="text-[10px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full font-bold">
+                            البرنامج الحالي
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] font-semibold text-purple-800">
+                        {prog.durationMonths} أشهر
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-500 leading-normal">{prog.description}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
+              <button
+                type="button"
+                onClick={() => setChildToEnroll(null)}
+                className="px-4 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold transition-colors cursor-pointer"
+              >
+                إلغاء وإغلاق
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const progId = selectedNewProgramId || programs[0].id;
+                  enrollChildInProgram(childToEnroll.id, progId);
+                  setChildToEnroll(null);
+                  setChildFilter('active');
+                }}
+                className="px-5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Check className="w-4 h-4" />
+                <span>تأكيد التسجيل وبدء البرنامج</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 5: Child Enrollment Status & Progress Flow (عرض حالة الطلب) */}
+      {childToViewStatus && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setChildToViewStatus(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs"
+        >
+          <div className="relative bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-stone-200 text-right animate-in fade-in zoom-in-95 duration-150">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setChildToViewStatus(null)}
+              className="absolute top-5 left-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-colors cursor-pointer"
+              title="إغلاق النافذة"
+              aria-label="إغلاق"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center mb-4">
+              <Clock className="w-6 h-6" />
+            </div>
+
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-blue-900 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-200">
+                متابعة حالة الطلب والاشتراك
+              </span>
+            </div>
+
+            <h3 className="text-lg font-black text-stone-900 mb-1">
+              طلب التحاق: {childToViewStatus.fullName}
+            </h3>
+            <p className="text-xs text-stone-500 mb-6">
+              مسار الالتحاق بالبرنامج القرآني وتفعيله من الإدارة
+            </p>
+
+            {/* Stepper Steps */}
+            <div className="space-y-4 mb-6 relative pr-2">
+              {/* Step 1: Child Registered */}
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
+                  <Check className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-stone-900">1. تسجيل بيانات الطفل</h4>
+                  <p className="text-[11px] text-stone-500">تم تسجيل بيانات الطفل وتحديد الفئة العمرية بنجاح.</p>
+                </div>
+              </div>
+
+              {/* Step 2: Subscription choice */}
+              <div className="flex items-start gap-3">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs ${
+                  childToViewStatus.enrollmentStatus !== 'pending_subscription'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-blue-600 text-white ring-4 ring-blue-100'
+                }`}>
+                  {childToViewStatus.enrollmentStatus !== 'pending_subscription' ? <Check className="w-4 h-4" /> : '2'}
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-stone-900">2. اختيار برنامج الاشتراك</h4>
+                  <p className="text-[11px] text-stone-500">
+                    {childToViewStatus.enrollmentStatus === 'pending_subscription'
+                      ? 'الطفل بانتظار اختيار باقة الاشتراك والمتابعة للدفع.'
+                      : 'تم اختيار البرنامج وتحديد مسار الدورة.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 3: Payment */}
+              <div className="flex items-start gap-3">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs ${
+                  childToViewStatus.enrollmentStatus === 'pending_activation' || childToViewStatus.enrollmentStatus === 'active' || isChildActive(childToViewStatus)
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : childToViewStatus.enrollmentStatus === 'pending_payment'
+                    ? 'bg-amber-500 text-white ring-4 ring-amber-100'
+                    : 'bg-stone-100 text-stone-400'
+                }`}>
+                  {childToViewStatus.enrollmentStatus === 'pending_activation' || childToViewStatus.enrollmentStatus === 'active' || isChildActive(childToViewStatus) ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    '3'
+                  )}
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-stone-900">3. سداد رسوم الاشتراك</h4>
+                  <p className="text-[11px] text-stone-500">
+                    {childToViewStatus.enrollmentStatus === 'pending_activation' || childToViewStatus.enrollmentStatus === 'active' || isChildActive(childToViewStatus)
+                      ? 'تم سداد الرسوم عبر بوابة الدفع المعتمدة.'
+                      : childToViewStatus.enrollmentStatus === 'pending_payment'
+                      ? 'بانتظار سداد الاشتراك عبر فوري أو فودافون كاش أو البطاقة.'
+                      : 'يتم السداد بعد اختيار البرنامج.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 4: Admin Activation */}
+              <div className="flex items-start gap-3">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs ${
+                  childToViewStatus.enrollmentStatus === 'active' || isChildActive(childToViewStatus)
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : childToViewStatus.enrollmentStatus === 'pending_activation'
+                    ? 'bg-orange-500 text-white ring-4 ring-orange-100 animate-pulse'
+                    : 'bg-stone-100 text-stone-400'
+                }`}>
+                  {childToViewStatus.enrollmentStatus === 'active' || isChildActive(childToViewStatus) ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    '4'
+                  )}
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-stone-900">4. مراجعة وتفعيل الإدارة</h4>
+                  <p className="text-[11px] text-stone-500">
+                    {childToViewStatus.enrollmentStatus === 'active' || isChildActive(childToViewStatus)
+                      ? 'تم تفعيل حساب الطفل بنجاح ونقله إلى تبويب الأبناء النشطين.'
+                      : childToViewStatus.enrollmentStatus === 'pending_activation'
+                      ? 'الطلب قيد مراجعة فريق الإدارة لتسكين الطفل في المجموعة المناسبة.'
+                      : 'تفعيل الحساب وتسكين الحلقة فور إتمام الدفع.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Current Status Box */}
+            <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 text-xs text-stone-700 mb-6">
+              <span className="font-bold block text-stone-900 mb-1">الوضع الحالي:</span>
+              {childToViewStatus.enrollmentStatus === 'pending_subscription' && (
+                <p>الطفل مسجل وبانتظار بدء الاشتراك للالتحاق بالبرنامج القرآني.</p>
+              )}
+              {childToViewStatus.enrollmentStatus === 'pending_payment' && (
+                <p>تم تسجيل طلب الاشتراك وبانتظار استكمال عملية الدفع لتأكيد المقعد.</p>
+              )}
+              {childToViewStatus.enrollmentStatus === 'pending_activation' && (
+                <div className="space-y-1.5 text-orange-950">
+                  <p className="font-bold flex items-center gap-1.5 text-orange-900">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>تم استلام رسوم الاشتراك بنجاح</span>
+                  </p>
+                  <p className="bg-orange-100/70 p-2.5 rounded-xl border border-orange-200 text-xs font-semibold text-orange-900">
+                    ℹ️ الحالة تقررها الإدارة بعد دفع الرسوم: جاري المراجعة الإدارية وتسكين الطفل في الحلقة والمعلم المناسب، وسيتم نقله تلقائياً إلى تبويب "الأبناء النشطون".
+                  </p>
+                </div>
+              )}
+              {(childToViewStatus.enrollmentStatus === 'active' || isChildActive(childToViewStatus)) && (
+                <p className="text-emerald-900">
+                  حساب الطفل مفعّل وجاهز في تبويب <strong>"الأبناء النشطون"</strong> وبإمكانه حضور الجلسات وتسليم التلاوات.
+                </p>
+              )}
+            </div>
+
+            {/* Action Buttons in Modal */}
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
+              <button
+                type="button"
+                onClick={() => setChildToViewStatus(null)}
+                className="px-4 py-2 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-bold transition-colors cursor-pointer"
+              >
+                إغلاق
+              </button>
+
+              {childToViewStatus.enrollmentStatus === 'pending_subscription' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChildToViewStatus(null);
+                    enrollChildInProgram(childToViewStatus.id, childToViewStatus.currentProgramId || programs[0].id);
+                    onGoToCheckout();
+                  }}
+                  className="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>اشترك الآن</span>
+                </button>
+              )}
+
+              {childToViewStatus.enrollmentStatus === 'pending_payment' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChildToViewStatus(null);
+                    setActiveStudentId(childToViewStatus.id);
+                    onGoToCheckout();
+                  }}
+                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>استكمال الدفع</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

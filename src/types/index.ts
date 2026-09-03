@@ -36,7 +36,13 @@ export interface StudentUser {
   assignedTeacherId?: string;
   assignedSupervisorId?: string;
   enrolledAt?: string;
-  status: 'active' | 'pending_payment' | 'inactive';
+  status: 'active' | 'pending_payment' | 'inactive' | 'archived' | 'graduated';
+  enrollmentStatus?: 'pending_subscription' | 'pending_payment' | 'pending_activation' | 'active';
+  completedProgramIds?: string[];
+  archivedAt?: string;
+  graduatedAt?: string;
+  graduationNote?: string;
+  journeyApprovedByAdmin?: boolean;
 }
 
 export interface TeacherUser {

@@ -13,6 +13,7 @@ import {
   BookOpen,
   MessageSquare,
   AlertCircle,
+  X,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -124,31 +125,57 @@ export const TeacherDashboard: React.FC = () => {
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-stone-200 mb-8 overflow-x-auto pb-2">
-          {[
-            { id: 'audios', label: `سجل التسميع الصوتي (${pendingAudios.length})`, icon: Mic },
-            { id: 'students', label: `طلابي (${teacherStudents.length})`, icon: Users },
-            { id: 'sessions', label: 'حلقاتي المباشرة', icon: Calendar },
-            { id: 'assign_task', label: 'إسناد وتكليف مهام', icon: BookOpen },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
-                  isActive
-                    ? 'bg-teal-700 text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center justify-between border-b border-stone-200 mb-8 pb-2 gap-4">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {[
+              { id: 'audios', label: `سجل التسميع الصوتي (${pendingAudios.length})`, icon: Mic },
+              { id: 'students', label: `طلابي (${teacherStudents.length})`, icon: Users },
+              { id: 'sessions', label: 'حلقاتي المباشرة', icon: Calendar },
+              { id: 'assign_task', label: 'إسناد وتكليف مهام', icon: BookOpen },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+                    isActive
+                      ? 'bg-teal-700 text-white shadow-xs'
+                      : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                  {isActive && activeTab !== 'audios' && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTab('audios');
+                      }}
+                      title="إغلاق التبويب والعودة للتسجيلات"
+                      className="mr-1 p-0.5 rounded-full hover:bg-teal-800 text-teal-100 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeTab !== 'audios' && (
+            <button
+              type="button"
+              onClick={() => setActiveTab('audios')}
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+              title="إغلاق التبويب والعودة لسجل التسميع الصوتي"
+            >
+              <X className="w-3.5 h-3.5 text-stone-500" />
+              <span>إغلاق التبويب</span>
+            </button>
+          )}
         </div>
 
         {/* Tab 1: Audio Submissions Review Area */}
@@ -228,9 +255,20 @@ export const TeacherDashboard: React.FC = () => {
                 <div className="lg:col-span-5">
                   {selectedAudioId ? (
                     <div className="bg-white rounded-2xl p-6 border border-teal-300 shadow-sm sticky top-24 space-y-4">
-                      <h4 className="font-bold text-stone-900 text-base pb-2 border-b border-stone-100">
-                        نموذج تقييم التسميع والتجويد
-                      </h4>
+                      <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                        <h4 className="font-bold text-stone-900 text-base">
+                          نموذج تقييم التسميع والتجويد
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAudioId(null)}
+                          className="w-7 h-7 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+                          title="إغلاق نموذج التقييم"
+                          aria-label="إغلاق"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
 
                       <form onSubmit={handleReviewSubmit} className="space-y-4">
                         <div>

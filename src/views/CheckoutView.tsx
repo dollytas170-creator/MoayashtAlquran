@@ -14,6 +14,7 @@ import {
   Building,
   Tag,
   AlertCircle,
+  X,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PaymentRecord } from '../types';
@@ -38,7 +39,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
   const program = programs[0];
   const parentChildren = students.filter(
-    (s) => s.parentId === activeParent?.id || activeParent === null
+    (s) => (s.parentId === activeParent?.id || activeParent === null) && s.status !== 'archived'
   );
 
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(() =>
@@ -133,19 +134,34 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   return (
     <div className="min-h-screen bg-stone-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        {/* Navigation Breadcrumb */}
+        {/* Navigation / Close Bar */}
         <div className="flex items-center justify-between mb-8">
           <button
             type="button"
             onClick={onBackToParent}
-            className="inline-flex items-center gap-2 text-stone-600 hover:text-stone-900 text-sm font-semibold transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 hover:text-stone-900 hover:bg-stone-100 text-sm font-semibold transition-colors cursor-pointer shadow-2xs"
+            title="إغلاق والعودة إلى لوحة ولي الأمر"
           >
             <ArrowRight className="w-4 h-4" />
             <span>العودة إلى لوحة ولي الأمر</span>
           </button>
-          <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-            بوابة الدفع الآمنة
-          </span>
+          
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
+              بوابة الدفع الآمنة
+            </span>
+
+            <button
+              type="button"
+              onClick={onBackToParent}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-600 hover:text-stone-900 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+              title="إغلاق نافذة الدفع والعودة"
+              aria-label="إغلاق نافذة الدفع"
+            >
+              <X className="w-4 h-4 text-stone-500" />
+              <span>إغلاق النافذة</span>
+            </button>
+          </div>
         </div>
 
         {!completedPayment ? (

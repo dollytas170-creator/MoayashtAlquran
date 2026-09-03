@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   Lock,
   Plus,
+  X,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -148,9 +149,12 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               <button
                 type="button"
                 onClick={onBackToParent}
-                className="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                title="إغلاق بوابة الطالب والعودة للوحة ولي الأمر"
+                aria-label="إغلاق بوابة الطالب"
               >
-                بوابة ولي الأمر
+                <X className="w-4 h-4 text-stone-500" />
+                <span>إغلاق والعودة لولي الأمر</span>
               </button>
             )}
           </div>
@@ -181,34 +185,60 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 sm:gap-2 border-b border-stone-200 mb-6 overflow-x-auto pb-2">
-          {[
-            { id: 'journey', label: 'رحلتي وشجرة المعايشة', icon: TreeDeciduous },
-            { id: 'tasks', label: 'مهامي الأسبوعية', icon: BookOpen },
-            { id: 'memorization', label: 'الحفظ والتسميع الصوتي', icon: Mic },
-            { id: 'tadabbur', label: 'التدبر والخواطر', icon: Heart },
-            { id: 'family', label: 'أنشطتي مع الأسرة', icon: Heart },
-            { id: 'sessions', label: 'جلستي القادمة', icon: Calendar },
-            { id: 'achievements', label: 'أوسمتي وإنجازاتي', icon: Award },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
-                  isActive
-                    ? 'bg-emerald-700 text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-100'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center justify-between border-b border-stone-200 mb-6 pb-2 gap-4">
+          <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1">
+            {[
+              { id: 'journey', label: 'رحلتي وشجرة المعايشة', icon: TreeDeciduous },
+              { id: 'tasks', label: 'مهامي الأسبوعية', icon: BookOpen },
+              { id: 'memorization', label: 'الحفظ والتسميع الصوتي', icon: Mic },
+              { id: 'tadabbur', label: 'التدبر والخواطر', icon: Heart },
+              { id: 'family', label: 'أنشطتي مع الأسرة', icon: Heart },
+              { id: 'sessions', label: 'جلستي القادمة', icon: Calendar },
+              { id: 'achievements', label: 'أوسمتي وإنجازاتي', icon: Award },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
+                    isActive
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-100'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                  {isActive && activeTab !== 'journey' && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTab('journey');
+                      }}
+                      title="إغلاق التبويب والعودة لخريطة الرحلة"
+                      className="mr-1 p-0.5 rounded-full hover:bg-emerald-800 text-emerald-100 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeTab !== 'journey' && (
+            <button
+              type="button"
+              onClick={() => setActiveTab('journey')}
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+              title="إغلاق التبويب الحالي والعودة لخريطة الرحلة"
+            >
+              <X className="w-3.5 h-3.5 text-stone-500" />
+              <span>إغلاق التبويب</span>
+            </button>
+          )}
         </div>
 
         {/* Tab 1: Journey & Interactive Tree */}
