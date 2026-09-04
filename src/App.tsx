@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Home } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { Navbar } from './components/common/Navbar';
@@ -47,6 +48,32 @@ function MainLayout() {
     setIsCheckoutActive(false);
   };
 
+  const handleGoToHome = () => {
+    setIsCheckoutActive(false);
+    setShowLanding(false);
+    setCurrentRole('public');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Ensure checkout is closed and landing is shown whenever switching to public role
+  useEffect(() => {
+    if (currentRole === 'public') {
+      setIsCheckoutActive(false);
+      setShowLanding(false);
+    }
+  }, [currentRole]);
+
+  const handleStartJourney = () => {
+    if (activeParent) {
+      setCurrentRole('parent');
+      setShowLanding(false);
+      setIsCheckoutActive(false);
+      handleOpenAddChild();
+    } else {
+      setIsRegisterOpen(true);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 text-stone-900 font-sans antialiased selection:bg-emerald-200 selection:text-emerald-950">
       {/* Top Main Navbar */}
@@ -61,6 +88,7 @@ function MainLayout() {
         {isCheckoutActive ? (
           <CheckoutView
             onBackToParent={() => setIsCheckoutActive(false)}
+            onBackToHome={handleGoToHome}
             onGoToStudentDashboard={() => {
               setIsCheckoutActive(false);
               setCurrentRole('student');
@@ -68,7 +96,7 @@ function MainLayout() {
           />
         ) : showLanding ? (
           <LandingPage
-            onOpenRegister={() => setIsRegisterOpen(true)}
+            onOpenRegister={handleStartJourney}
             onOpenLogin={() => setIsLoginOpen(true)}
             onGoToParentPortal={handleGoToParentPortal}
           />
@@ -92,26 +120,25 @@ function MainLayout() {
           <AdminDashboard />
         ) : (
           <LandingPage
-            onOpenRegister={() => setIsRegisterOpen(true)}
+            onOpenRegister={handleStartJourney}
             onOpenLogin={() => setIsLoginOpen(true)}
             onGoToParentPortal={handleGoToParentPortal}
           />
         )}
       </main>
 
-      {/* Floating Landing / Portal toggle helper */}
-      <aside aria-label="أدوات المساعدة السريعة" className="fixed bottom-4 left-4 z-40 flex items-center gap-2 bg-stone-900/90 backdrop-blur-xs text-white p-1.5 rounded-2xl shadow-xl border border-stone-800 text-xs font-bold">
+      {/* Floating Home Button */}
+      <div className="fixed bottom-6 left-6 z-50">
         <button
           type="button"
-          onClick={() => {
-            setShowLanding((prev) => !prev);
-            setIsCheckoutActive(false);
-          }}
-          className="px-3 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-emerald-300 transition-colors cursor-pointer"
+          onClick={handleGoToHome}
+          className="px-3.5 py-2 rounded-xl bg-stone-900/95 hover:bg-stone-900 text-white text-xs font-semibold shadow-lg backdrop-blur-sm border border-stone-800 transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center gap-1.5"
+          title="العودة إلى الصفحة الرئيسية"
         >
-          {showLanding ? 'الدخول إلى المنصة واللوحات' : 'معاينة الصفحة التعريفية العامة'}
+          <Home className="w-3.5 h-3.5 text-emerald-400" />
+          <span>الرئيسية</span>
         </button>
-      </aside>
+      </div>
 
       {/* Global Modals */}
       <RegisterModal
@@ -125,6 +152,7 @@ function MainLayout() {
           setIsRegisterOpen(false);
           setShowLanding(false);
           setCurrentRole('parent');
+          setIsAddChildOpen(true);
         }}
       />
 

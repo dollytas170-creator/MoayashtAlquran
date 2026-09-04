@@ -22,6 +22,7 @@ import {
   Clock,
   UserCheck,
   Check,
+  Home,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SessionType } from '../types';
@@ -46,6 +47,7 @@ export const AdminDashboard: React.FC = () => {
     ageGroups,
     surahs,
     activateChildByAdmin,
+    setCurrentRole,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<
@@ -193,6 +195,18 @@ export const AdminDashboard: React.FC = () => {
                 إدارة المناهج، الكوادر التعليمية، المجموعات، التسعير، والجلسات المباشرة
               </p>
             </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setCurrentRole('public')}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition-all cursor-pointer shadow-sm hover:scale-102"
+              title="العودة إلى الواجهة الرئيسية للمنصة"
+            >
+              <Home className="w-4 h-4 text-emerald-200" />
+              <span>الواجهة الرئيسية</span>
+            </button>
           </div>
         </div>
       </div>

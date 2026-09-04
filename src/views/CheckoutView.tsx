@@ -15,6 +15,7 @@ import {
   Tag,
   AlertCircle,
   X,
+  Home,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PaymentRecord } from '../types';
@@ -22,11 +23,13 @@ import { PaymentRecord } from '../types';
 interface CheckoutViewProps {
   onBackToParent: () => void;
   onGoToStudentDashboard: () => void;
+  onBackToHome?: () => void;
 }
 
 export const CheckoutView: React.FC<CheckoutViewProps> = ({
   onBackToParent,
   onGoToStudentDashboard,
+  onBackToHome,
 }) => {
   const {
     students,
@@ -35,6 +38,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
     processPayment,
     payments,
     programs,
+    setCurrentRole,
   } = useApp();
 
   const program = programs[0];
@@ -135,16 +139,31 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
     <div className="min-h-screen bg-stone-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Navigation / Close Bar */}
-        <div className="flex items-center justify-between mb-8">
-          <button
-            type="button"
-            onClick={onBackToParent}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 hover:text-stone-900 hover:bg-stone-100 text-sm font-semibold transition-colors cursor-pointer shadow-2xs"
-            title="إغلاق والعودة إلى لوحة ولي الأمر"
-          >
-            <ArrowRight className="w-4 h-4" />
-            <span>العودة إلى لوحة ولي الأمر</span>
-          </button>
+        <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentRole('public');
+                onBackToHome?.();
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 text-sm font-bold transition-colors cursor-pointer shadow-2xs"
+              title="العودة إلى الواجهة الرئيسية للمنصة"
+            >
+              <Home className="w-4 h-4 text-emerald-700" />
+              <span>الواجهة الرئيسية</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onBackToParent}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-stone-200 text-stone-700 hover:text-stone-900 hover:bg-stone-100 text-sm font-semibold transition-colors cursor-pointer shadow-2xs"
+              title="إغلاق والعودة إلى لوحة ولي الأمر"
+            >
+              <ArrowRight className="w-4 h-4" />
+              <span>لوحة ولي الأمر</span>
+            </button>
+          </div>
           
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">

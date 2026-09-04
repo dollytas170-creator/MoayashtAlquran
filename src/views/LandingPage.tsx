@@ -117,72 +117,65 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 pb-20">
+    <div className="min-h-screen bg-stone-50 text-stone-900 pb-20 select-none cursor-default">
       {/* 1. Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 border-b border-stone-200 bg-gradient-to-b from-emerald-50/70 via-stone-50 to-stone-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-4xl mx-auto space-y-6">
-            {/* Coach & Program Badge */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-emerald-100/80 border border-emerald-300/80 text-emerald-900 text-xs sm:text-sm font-bold shadow-xs animate-fade-in">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
-              <span>{program.name}</span>
-              <span className="text-emerald-700 font-semibold">• مع {program.coachName}</span>
-            </div>
-
+      <section className="relative overflow-hidden min-h-[calc(100vh-6.5rem)] flex flex-col justify-center py-6 sm:py-8 lg:py-10 border-b border-stone-200 bg-gradient-to-b from-emerald-50/70 via-stone-50 to-stone-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full my-auto">
+          <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-3.5">
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-stone-900 leading-[1.25] tracking-tight">
-              مش بس يحفظ القرآن…
+            <h1 className="text-xl sm:text-2.5xl lg:text-3.5xl font-black text-stone-900 leading-[1.2] tracking-tight">
+              مش بس يحفظ القرآن...
               <br />
-              <span className="text-emerald-800 underline decoration-emerald-400/50 decoration-wavy underline-offset-8">
+              <span className="text-emerald-800">
                 يفهمه، يتدبره، ويبدأ يعيشه
               </span>
             </h1>
 
+            {/* Wavy line decoration matching screenshot */}
+            <div className="flex justify-center -mt-1 mb-0.5">
+              <svg className="w-56 sm:w-72 h-4 sm:h-4.5 text-emerald-400" viewBox="0 0 320 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 8 Q 15 1, 25 8 T 45 8 T 65 8 T 85 8 T 105 8 T 125 8 T 145 8 T 165 8 T 185 8 T 205 8 T 225 8 T 245 8 T 265 8 T 285 8 T 305 8" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
+                <path d="M12 14 Q 22 7, 32 14 T 52 14 T 72 14 T 92 14 T 112 14 T 132 14 T 152 14 T 172 14 T 192 14 T 212 14 T 232 14 T 252 14 T 272 14 T 292 14" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
+              </svg>
+            </div>
+
             {/* Subheadline & Tagline */}
-            <p className="text-lg sm:text-xl text-stone-600 font-medium max-w-2xl mx-auto leading-relaxed">
-              رحلة تربوية قرآنية متكاملة للأبناء من <strong className="text-stone-900 font-bold">6 إلى 15 سنة</strong> تنقلهم من التسميع الآلي إلى الارتباط القلبي والسلوكي بكلام الله تعالى.
+            <p className="text-xs sm:text-sm md:text-base text-stone-600 font-medium max-w-xl mx-auto leading-relaxed">
+              رحلة تربوية متكاملة للأبناء من 6 إلى 15 سنة تنقلهم من التسميع الآلي إلى الارتباط القلبي والسلوكي بكلام الله تعالى.
             </p>
 
             {/* Core Brand Quote */}
-            <div className="py-2">
-              <p className="text-sm sm:text-base font-bold text-emerald-900 bg-emerald-50/80 border border-emerald-200 inline-block px-5 py-2.5 rounded-2xl">
-                « كل آية نزرعها اليوم… تكبر مع ابنك غدًا »
+            <div className="py-0.5 sm:py-1">
+              <p className="text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-50/90 border border-emerald-300 inline-flex items-center gap-1.5 px-5 py-1.5 rounded-xl shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>« كل آية نزرعها اليوم... تكبر مع ابنك غدًا »</span>
               </p>
             </div>
 
             {/* CTAs */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 pt-0.5 sm:pt-1">
+              <a
+                href="#about-program"
+                className="px-5 sm:px-6 py-2.5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 font-bold text-xs sm:text-sm transition-colors cursor-pointer flex items-center gap-2 whitespace-nowrap shadow-2xs hover:shadow-xs"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-stone-600" />
+                <span>تعرف على البرنامج</span>
+              </a>
+
               <button
                 type="button"
                 onClick={onOpenRegister}
-                className="px-8 py-4 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-base shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-2"
+                className="px-6 sm:px-7 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs sm:text-sm shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap hover:scale-102 active:scale-98"
               >
                 <span>ابدأ رحلة ابنك مع القرآن</span>
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
               </button>
-
-              <a
-                href="#concept"
-                className="px-6 py-4 rounded-2xl bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 font-bold text-base transition-colors cursor-pointer"
-              >
-                تعرف على البرنامج
-              </a>
-
-              {activeParent && (
-                <button
-                  type="button"
-                  onClick={onGoToParentPortal}
-                  className="px-6 py-4 rounded-2xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-base transition-colors cursor-pointer"
-                >
-                  لوحة ولي الأمر
-                </button>
-              )}
             </div>
 
             {/* Promo Live Banner */}
-            <div className="pt-4 flex items-center justify-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs sm:text-sm font-bold">
-                <Flame className="w-4 h-4 text-amber-600 animate-bounce" />
+            <div className="pt-1 sm:pt-1.5 flex items-center justify-center">
+              <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-amber-50/90 border border-amber-300 text-amber-950 text-[11px] sm:text-xs font-bold shadow-2xs">
+                <Flame className="w-3.5 h-3.5 text-amber-600 animate-bounce" />
                 <span>عرض الانطلاق: خصم 25% لأول 15 مشتركاً فقط ({pricing.promotionalMonthlyEGP} ج.م بدلاً من {pricing.regularMonthlyEGP} ج.م)</span>
               </div>
             </div>
@@ -190,8 +183,67 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      {/* 2. Core Journey Visualizer */}
-      <section id="journey" className="py-16 bg-white border-b border-stone-200">
+      {/* 2. About Program Comprehensive Section (Concept, Methodology, Ages, and Follow-up) */}
+      <section id="about-program" className="scroll-mt-16 py-16 bg-white border-b border-stone-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-block px-3 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-bold mb-2">
+              عن البرنامج وآلية العمل
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black text-stone-900">
+              برنامج متكامل يجمع بين الحفظ الرصين وبناء الشخصية بالقرآن
+            </h2>
+            <p className="text-stone-600 text-sm sm:text-base mt-3 leading-relaxed">
+              صُمم برنامج «معايشة القرآن» ليعالج مشكلة الحفظ السريع المنفصل عن الفهم والسلوك، عبر الجمع بين حلقات التسميع وضبط التجويد الفردية، وجلسات التدبر التفاعلية، والأنشطة الأسرية اليومية.
+            </p>
+          </div>
+
+          {/* 3 Pillars Overview Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+            <div className="p-6 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-700 text-white flex items-center justify-center mx-auto mb-3">
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-stone-900 text-base mb-1.5">1. المنهجية الخماسية</h3>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                التدرج من الحفظ وضبط الألفاظ، إلى فهم المعاني، ثم التدبر واستخراج الفوائد، والتطبيق العملي، حتى يعيش الابن مع القرآن خلقاً وعملاً.
+              </p>
+              <a href="#journey" className="inline-block mt-3 text-xs font-bold text-emerald-800 hover:underline">
+                استعراض الخطوات الخمس ←
+              </a>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-teal-50/60 border border-teal-200/80 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-teal-700 text-white flex items-center justify-center mx-auto mb-3">
+                <Users className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-stone-900 text-base mb-1.5">2. فئات عمرية مخصصة (6 - 15 سنة)</h3>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                مراعاة كاملة للخصائص النمائية للطفل واليافع؛ فلا يعامل اليافع كالطفل، بل لكل سن أسلوبه وأنشطته ولغته التربوية المحببة.
+              </p>
+              <a href="#ages" className="inline-block mt-3 text-xs font-bold text-teal-800 hover:underline">
+                استكشاف تجربة كل فئة ←
+              </a>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-amber-50/60 border border-amber-200/80 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-amber-700 text-white flex items-center justify-center mx-auto mb-3">
+                <Calendar className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-stone-900 text-base mb-1.5">3. آلية متابعة شهرية شاملة</h3>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                4 جلسات تدبر جماعية، 8 جلسات متابعة حفظ وتجويد فردية، كتيب أنشطة تفاعلي، مهمات أسرية، وتقارير دورية تتاح لولي الأمر.
+              </p>
+              <a href="#deliverables" className="inline-block mt-3 text-xs font-bold text-amber-800 hover:underline">
+                تفاصيل ما يحصل عليه الابن ←
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Core Journey Visualizer */}
+      <section id="journey" className="py-16 bg-stone-50 border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-xs font-black uppercase text-emerald-700 tracking-wider mb-2">

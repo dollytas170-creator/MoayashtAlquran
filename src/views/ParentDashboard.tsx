@@ -34,6 +34,8 @@ import {
   X,
   Eye,
   HelpCircle,
+  Lock,
+  Home,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -72,6 +74,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     graduateChild,
     enrollChildInProgram,
     logoutParent,
+    setCurrentRole,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<
@@ -182,7 +185,17 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           </div>
 
           {/* Top Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setCurrentRole('public')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 hover:text-emerald-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+              title="العودة إلى الواجهة الرئيسية للمنصة"
+            >
+              <Home className="w-4 h-4 text-emerald-700" />
+              <span>الواجهة الرئيسية</span>
+            </button>
+
             <button
               type="button"
               onClick={onOpenAddChild}
@@ -356,14 +369,34 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 </div>
 
                 {currentChild && (
-                  <button
-                    type="button"
-                    onClick={() => onGoToStudentView(currentChild.id)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all cursor-pointer shrink-0 shadow-2xs"
-                  >
-                    <span>دخول بوابة الابن «رحلتي»</span>
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
+                  isChildActive(currentChild) ? (
+                    <button
+                      type="button"
+                      onClick={() => onGoToStudentView(currentChild.id)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all cursor-pointer shrink-0 shadow-2xs"
+                    >
+                      <span>دخول بوابة الابن «رحلتي»</span>
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        alert(`بوابة الابن «رحلتي» معطلة حالياً لحين اكتمال التفعيل والاعتماد من الإدارة.\n\nالطفل: ${currentChild.fullName}\nالحالة الحالية: ${
+                          currentChild.enrollmentStatus === 'pending_subscription'
+                            ? 'بانتظار الاشتراك'
+                            : currentChild.enrollmentStatus === 'pending_payment'
+                            ? 'بانتظار السداد'
+                            : 'بانتظار التفعيل واعتماد الإدارة بعد دفع الرسوم'
+                        }\n\nسيصلك إشعار فوري وسيتم فتح البوابة تلقائياً فور اعتماد الإدارة.`);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-500 border border-stone-200 text-xs font-bold transition-all cursor-pointer shrink-0 shadow-2xs"
+                      title="بوابة الابن معطلة لحين إكمال التفعيل من الإدارة"
+                    >
+                      <Lock className="w-4 h-4 text-stone-400" />
+                      <span>دخول «رحلتي» (معطل لحين التفعيل)</span>
+                    </button>
+                  )
                 )}
               </div>
             )}
@@ -737,14 +770,34 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
 
                         <div className="flex items-center justify-between gap-1.5 flex-wrap">
                           <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => onGoToStudentView(child.id)}
-                              className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-bold transition-colors cursor-pointer"
-                              title="فتح بوابة رحلتي للطالب"
-                            >
-                              دخول رحلتي
-                            </button>
+                            {enrollmentStatus === 'active' ? (
+                              <button
+                                type="button"
+                                onClick={() => onGoToStudentView(child.id)}
+                                className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-bold transition-colors cursor-pointer"
+                                title="فتح بوابة رحلتي للطالب"
+                              >
+                                دخول رحلتي
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  alert(`بوابة الابن «رحلتي» معطلة حالياً لحين إكمال التفعيل والاعتماد من الإدارة.\n\nالطفل: ${child.fullName}\nحالة الطلب: ${
+                                    enrollmentStatus === 'pending_subscription'
+                                      ? 'بانتظار الاشتراك'
+                                      : enrollmentStatus === 'pending_payment'
+                                      ? 'بانتظار السداد'
+                                      : 'بانتظار التفعيل واعتماد الإدارة'
+                                  }\n\nسيصلك إشعار فوري وسيتم فتح البوابة تلقائياً فور اعتماد الإدارة.`);
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-400 border border-stone-200 text-xs font-medium cursor-pointer flex items-center gap-1"
+                                title="البوابة معطلة لحين اكتمال التفعيل من الإدارة"
+                              >
+                                <Lock className="w-3 h-3 text-stone-400" />
+                                <span>رحلتي (معطل)</span>
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => onEditChild(child)}
