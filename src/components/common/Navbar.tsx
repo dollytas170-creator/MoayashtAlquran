@@ -367,16 +367,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           )}
 
-          {/* Header Action Buttons */}
+          {/* Header Action Buttons - Unified single Home button */}
           {currentRole !== 'public' && (
             <button
               type="button"
               onClick={() => handleRoleChange('public')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-emerald-600/70 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-all cursor-pointer shadow-xs hover:scale-102"
-              title="العودة إلى الواجهة الرئيسية للمنصة"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 hover:border-emerald-300 bg-white hover:bg-emerald-50 text-stone-700 hover:text-emerald-900 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+              title="العودة إلى الصفحة الرئيسية"
             >
-              <Home className="w-4 h-4 text-emerald-700" />
-              <span>الواجهة الرئيسية</span>
+              <Home className="w-3.5 h-3.5 text-emerald-700" />
+              <span>الرئيسية</span>
             </button>
           )}
 
@@ -390,29 +390,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <p className="text-xs font-bold text-stone-900">{activeParent.fullName}</p>
                 <p className="text-[10px] text-emerald-700 font-semibold">بوابة ولي الأمر ←</p>
               </button>
-              <button
-                type="button"
-                onClick={logoutParent}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer"
-                title="تسجيل الخروج من الحساب"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>خروج</span>
-              </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={handleOpenLogin}
-                className="px-4 py-2 rounded-xl text-stone-700 hover:text-emerald-800 hover:bg-stone-100 text-xs font-bold transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-xl text-stone-700 hover:text-emerald-800 hover:bg-stone-100 text-xs font-bold transition-colors cursor-pointer"
               >
-                تسجيل الدخول
+                تسجيل دخول ولي الأمر
               </button>
               <button
                 type="button"
                 onClick={handleOpenRegister}
-                className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer whitespace-nowrap"
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer whitespace-nowrap"
               >
                 ابدأ رحلة ابنك
               </button>
@@ -562,7 +553,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }}
                   className="text-xs font-bold text-stone-700 hover:text-emerald-700 cursor-pointer"
                 >
-                  تسجيل الدخول
+                  تسجيل دخول ولي الأمر
                 </button>
                 <button
                   type="button"

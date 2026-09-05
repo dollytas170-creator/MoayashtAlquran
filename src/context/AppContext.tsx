@@ -62,7 +62,8 @@ interface AppContextType {
   badges: BadgeItem[];
 
   // Action Methods
-  registerParent: (data: { fullName: string; phone: string; email: string; parentalConsent: boolean }) => ParentUser;
+  registerParent: (data: { fullName: string; phone: string; email: string; parentalConsent: boolean; verified?: boolean }) => ParentUser;
+  verifyParent: (parentId?: string) => void;
   loginParent: (emailOrPhone: string) => boolean;
   logoutParent: () => void;
   addChild: (childData: { fullName: string; age: number; gender: 'male' | 'female'; ageGroupId: string; birthDate?: string }) => StudentUser;
@@ -259,21 +260,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Auth & Parent
-  const registerParent = (data: { fullName: string; phone: string; email: string; parentalConsent: boolean }): ParentUser => {
+  const registerParent = (data: { fullName: string; phone: string; email: string; parentalConsent: boolean; verified?: boolean }): ParentUser => {
+    const isVerified = data.verified ?? false;
     const newParent: ParentUser = {
       id: 'p-' + Date.now(),
       fullName: data.fullName,
       phone: data.phone,
       email: data.email,
-      verified: true,
+      verified: isVerified,
       parentalConsent: data.parentalConsent,
       createdAt: new Date().toISOString(),
     };
     setParents(prev => [...prev, newParent]);
     setActiveParentId(newParent.id);
     setCurrentRoleState('parent');
-    notifyToast(`مرحباً بك يا ${data.fullName}! تم إنشاء حساب ولي الأمر بنجاح.`);
     return newParent;
+  };
+
+  const verifyParent = (parentId?: string) => {
+    const targetId = parentId || activeParentId;
+    if (targetId) {
+      setParents(prev => prev.map(p => p.id === targetId ? { ...p, verified: true } : p));
+      notifyToast('تم تفعيل وتأكيد حساب ولي الأمر بنجاح!');
+      const newNotif: AppNotification = {
+        id: 'notif-' + Date.now(),
+        recipientId: targetId,
+        role: 'parent',
+        title: 'تم تفعيل وتأكيد الحساب بنجاح',
+        message: 'تم تفعيل وتأكيد حساب ولي الأمر بنجاح، يمكنك الآن إدارة رحلة المعايشة وإضافة ومتابعة الأبناء.',
+        type: 'system',
+        createdAt: new Date().toISOString(),
+        read: false,
+      };
+      setNotifications(prev => [newNotif, ...prev]);
+    }
   };
 
   const loginParent = (emailOrPhone: string): boolean => {
@@ -310,7 +330,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setStudents(prev => [...prev, newChild]);
     setActiveStudentIdState(newChild.id);
-    notifyToast(`تمت إضافة الابن/الابنة "${childData.fullName}" بنجاح!`);
+    notifyToast(`تمت إضافة الابن/الابنة "${childData.fullName}" بنجاح، وتم إرسال رسالة تأكيد وتفعيل لولي الأمر.`);
+
+    const notif: AppNotification = {
+      id: 'notif-' + Date.now(),
+      recipientId: parentId,
+      role: 'parent',
+      title: 'إرسال رسالة تأكيد وتفعيل حساب الابن',
+      message: `تم إرسال رسالة تفعيل وتأكيد إضافة حساب الابن/الابنة "${childData.fullName}" عبر الواتساب والرسائل القصيرة إلى هاتف ولي الأمر.`,
+      type: 'system',
+      createdAt: new Date().toISOString(),
+      read: false,
+    };
+    setNotifications(prev => [notif, ...prev]);
+
     return newChild;
   };
 
@@ -913,6 +946,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         assessmentCriteria,
         badges,
         registerParent,
+        verifyParent,
         loginParent,
         logoutParent,
         addChild,

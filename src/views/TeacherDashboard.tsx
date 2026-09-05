@@ -14,7 +14,6 @@ import {
   MessageSquare,
   AlertCircle,
   X,
-  Home,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -26,6 +25,7 @@ export const TeacherDashboard: React.FC = () => {
     students,
     groups,
     sessions,
+    recordSessionAttendance,
     audioSubmissions,
     reviewAudioSubmission,
     tasks,
@@ -112,16 +112,6 @@ export const TeacherDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setCurrentRole('public')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-emerald-50 text-stone-700 hover:text-emerald-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-              title="العودة إلى الواجهة الرئيسية للمنصة"
-            >
-              <Home className="w-4 h-4 text-emerald-700" />
-              <span>الواجهة الرئيسية</span>
-            </button>
-
             <button
               type="button"
               onClick={() => setActiveTab('assign_task')}
@@ -435,16 +425,70 @@ export const TeacherDashboard: React.FC = () => {
                       </p>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-stone-100">
-                      <a
-                        href={ses.meetingLink || '#'}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors"
-                      >
-                        <Video className="w-4 h-4" />
-                        <span>دخول الغرفة (المحفظ)</span>
-                      </a>
+                    <div className="mt-4 pt-4 border-t border-stone-100 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <a
+                          href={ses.meetingLink || '#'}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors"
+                        >
+                          <Video className="w-3.5 h-3.5" />
+                          <span>دخول الغرفة</span>
+                        </a>
+                        <span className="text-[11px] text-stone-400 font-medium">رصد حضور الطلاب</span>
+                      </div>
+
+                      {teacherStudents.length > 0 && (
+                        <div className="space-y-1.5 pt-2 border-t border-stone-50">
+                          {teacherStudents.map((child) => {
+                            const status = ses.attendance?.[child.id];
+                            return (
+                              <div
+                                key={child.id}
+                                className="flex items-center justify-between p-2 rounded-lg bg-stone-50 text-xs"
+                              >
+                                <span className="font-semibold text-stone-800 text-[11px]">{child.fullName}</span>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => recordSessionAttendance(ses.id, child.id, 'present')}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
+                                      status === 'present'
+                                        ? 'bg-emerald-600 text-white shadow-2xs'
+                                        : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
+                                    }`}
+                                  >
+                                    حاضر
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => recordSessionAttendance(ses.id, child.id, 'absent')}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
+                                      status === 'absent'
+                                        ? 'bg-rose-600 text-white shadow-2xs'
+                                        : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
+                                    }`}
+                                  >
+                                    غائب
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => recordSessionAttendance(ses.id, child.id, 'excused')}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
+                                      status === 'excused'
+                                        ? 'bg-amber-600 text-white shadow-2xs'
+                                        : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
+                                    }`}
+                                  >
+                                    معذور
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

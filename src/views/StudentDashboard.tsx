@@ -19,7 +19,6 @@ import {
   Lock,
   Plus,
   X,
-  Home,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -146,16 +145,6 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 <span className="text-sm font-black text-amber-950">{totalScore} نقطة</span>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setCurrentRole('public')}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-stone-200 hover:bg-emerald-50 hover:text-emerald-800 text-stone-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-              title="العودة إلى الواجهة الرئيسية للمنصة"
-            >
-              <Home className="w-4 h-4 text-emerald-700" />
-              <span>الواجهة الرئيسية</span>
-            </button>
 
             {onBackToParent && (
               <button

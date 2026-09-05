@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Home } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { Navbar } from './components/common/Navbar';
@@ -126,19 +125,6 @@ function MainLayout() {
           />
         )}
       </main>
-
-      {/* Floating Home Button */}
-      <div className="fixed bottom-6 left-6 z-50">
-        <button
-          type="button"
-          onClick={handleGoToHome}
-          className="px-3.5 py-2 rounded-xl bg-stone-900/95 hover:bg-stone-900 text-white text-xs font-semibold shadow-lg backdrop-blur-sm border border-stone-800 transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center gap-1.5"
-          title="العودة إلى الصفحة الرئيسية"
-        >
-          <Home className="w-3.5 h-3.5 text-emerald-400" />
-          <span>الرئيسية</span>
-        </button>
-      </div>
 
       {/* Global Modals */}
       <RegisterModal

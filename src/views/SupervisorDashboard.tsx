@@ -14,7 +14,6 @@ import {
   Clock,
   Layers,
   X,
-  Home,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -93,16 +92,6 @@ export const SupervisorDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setCurrentRole('public')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-emerald-50 text-stone-700 hover:text-emerald-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-              title="العودة إلى الواجهة الرئيسية للمنصة"
-            >
-              <Home className="w-4 h-4 text-emerald-700" />
-              <span>الواجهة الرئيسية</span>
-            </button>
-
             <button
               type="button"
               onClick={() => setActiveTab('generate_report')}
@@ -251,6 +240,7 @@ export const SupervisorDashboard: React.FC = () => {
                     <p className="text-xs text-stone-500">
                       الحالة: <strong className="text-emerald-700 font-semibold">{child.status === 'active' ? 'نشط' : 'قيد التسجيل'}</strong>
                     </p>
+
                     <button
                       type="button"
                       onClick={() => {

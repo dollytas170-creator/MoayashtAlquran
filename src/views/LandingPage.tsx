@@ -20,6 +20,7 @@ import {
   Sparkle,
   Layers,
   GraduationCap,
+  X,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -41,6 +42,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [childrenCount, setChildrenCount] = useState<number>(2);
   const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(0);
   const [selectedAgeTab, setSelectedAgeTab] = useState<'6-9' | '10-12' | '13-15'>('6-9');
+  const [selectedDeliverable, setSelectedDeliverable] = useState<number | null>(null);
 
   // Pricing calculations
   const calculateTotalMonthly = (count: number) => {
@@ -234,8 +236,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <p className="text-xs text-stone-600 leading-relaxed">
                 4 جلسات تدبر جماعية، 8 جلسات متابعة حفظ وتجويد فردية، كتيب أنشطة تفاعلي، مهمات أسرية، وتقارير دورية تتاح لولي الأمر.
               </p>
-              <a href="#deliverables" className="inline-block mt-3 text-xs font-bold text-amber-800 hover:underline">
-                تفاصيل ما يحصل عليه الابن ←
+              <a
+                href="#deliverables"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById('deliverables');
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 mt-3 px-3.5 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+              >
+                <span>تفاصيل ما يحصل عليه الابن</span>
+                <ArrowLeft className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>
@@ -504,15 +517,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* 5. What the Learner Receives */}
-      <section className="py-16 bg-stone-50 border-b border-stone-200">
+      <section id="deliverables" className="py-16 bg-stone-50 border-b border-stone-200 scroll-mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-block px-3 py-1 rounded-lg bg-amber-100 text-amber-900 text-xs font-bold mb-2">
+              الخطة والمخرجات الشهرية للابن
+            </div>
             <h2 className="text-xs font-black uppercase text-emerald-700 tracking-wider mb-2">
               محتويات ومزايا البرنامج
             </h2>
             <h3 className="text-2xl sm:text-3xl font-black text-stone-900">
               ماذا يحصل ابنك خلال الشهر في معايشة القرآن؟
             </h3>
+            <p className="text-stone-600 text-sm mt-2">
+              منظومة متكاملة تجمع بين إتقان الحفظ وعمق التدبر وتطبيق الآيات في واقع الحياة اليومية
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -520,39 +539,92 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {
                 icon: Calendar,
                 title: '4 جلسات تدبر تفاعلية',
+                badge: 'أسبوعياً • 45 دقيقة',
                 desc: 'جلسة تدبر أسبوعية مباشرة أونلاين يقودها الكوتش لتفكيك معاني الآيات الحياتية.',
                 color: 'text-emerald-700 bg-emerald-50',
+                badgeColor: 'bg-emerald-100 text-emerald-800',
+                highlights: [
+                  'مجموعات صغيرة تفاعلية متقاربة عمرياً.',
+                  'ربط الآيات بمواقف وسلوكيات الطفل اليومية.',
+                  'حوار مفتوح وإجابة تساؤلات الأبناء بأمان.',
+                ],
               },
               {
                 icon: GraduationCap,
                 title: '8 جلسات متابعة حفظ',
+                badge: 'جلستان أسبوعياً',
                 desc: 'جلستان أسبوعياً مع معلم التحفيظ لإتقان التلاوة وضبط مخارج الحروف والتجويد.',
                 color: 'text-teal-700 bg-teal-50',
+                badgeColor: 'bg-teal-100 text-teal-800',
+                highlights: [
+                  'تسميع ومراجعة فردية مع محفظ مجاز.',
+                  'تصحيح مخارج الحروف وأحكام التجويد بسهولة.',
+                  'تقييم فوري لكل جلسة يصل لولي الأمر.',
+                ],
               },
               {
                 icon: BookOpen,
                 title: 'كتيب الأنشطة التفاعلية',
+                badge: 'ملف شهري مطبوع ورقمي',
                 desc: 'أوراق عمل وأسئلة تدبرية وتحديات أسبوعية تثبت المعنى في ذهن الطفل.',
                 color: 'text-amber-700 bg-amber-50',
+                badgeColor: 'bg-amber-100 text-amber-800',
+                highlights: [
+                  'خرائط ذهنية ميسرة لآيات السورة.',
+                  'ألغاز وأنشطة استنباطية ممتعة تناسب عمره.',
+                  'مساحات رسم وتعبير وتدوين الخواطر.',
+                ],
               },
               {
                 icon: HeartHandshake,
                 title: 'تطبيقات مع الأسرة',
+                badge: 'مهمات عائلية أسبوعية',
                 desc: 'مهمات عائلية تربط الابن بوالديه وإخوانه لتطبيق وصايا الآيات في البيت.',
                 color: 'text-purple-700 bg-purple-50',
+                badgeColor: 'bg-purple-100 text-purple-800',
+                highlights: [
+                  'بطاقات «عشت الآية» للتطبيق العملي بالمنزل.',
+                  'تعزيز الترابط العائلي وجلسات الحوار الأسري.',
+                  'نقاط وشارات لتغذية «شجرة المعايشة».',
+                ],
               },
             ].map((item, i) => {
               const Icon = item.icon;
               return (
                 <div
                   key={i}
-                  className="bg-white rounded-2xl p-6 border border-stone-200 shadow-xs hover:border-emerald-300 transition-all flex flex-col items-start"
+                  className="bg-white rounded-2xl p-6 border border-stone-200 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between"
                 >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${item.color}`}>
-                    <Icon className="w-6 h-6" />
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.color}`}>
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}>
+                        {item.badge}
+                      </span>
+                    </div>
+                    <h4 className="font-bold text-stone-900 text-base mb-2">{item.title}</h4>
+                    <p className="text-xs text-stone-600 leading-relaxed mb-4">{item.desc}</p>
+
+                    <div className="space-y-1.5 border-t border-stone-100 pt-3">
+                      {item.highlights.map((hl, hIdx) => (
+                        <div key={hIdx} className="flex items-start gap-1.5 text-[11px] text-stone-700">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>{hl}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <h4 className="font-bold text-stone-900 text-base mb-2">{item.title}</h4>
-                  <p className="text-xs text-stone-600 leading-relaxed">{item.desc}</p>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDeliverable(i)}
+                    className="w-full mt-4 py-2 rounded-xl bg-stone-50 hover:bg-emerald-50 text-stone-700 hover:text-emerald-800 border border-stone-200 hover:border-emerald-200 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <span>تفاصيل المحتوى</span>
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               );
             })}
@@ -861,6 +933,116 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         </div>
       </section>
+
+      {/* Deliverable Details Modal */}
+      {selectedDeliverable !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-stone-200 relative text-right animate-scale-up">
+            <button
+              type="button"
+              onClick={() => setSelectedDeliverable(null)}
+              className="absolute left-4 top-4 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {(() => {
+              const items = [
+                {
+                  title: '4 جلسات تدبر تفاعلية',
+                  badge: 'أسبوعياً • 45 دقيقة',
+                  desc: 'جلسة تدبر أسبوعية مباشرة أونلاين يقودها الكوتش لتفكيك معاني الآيات الحياتية.',
+                  fullDetails: [
+                    'توزيع الطلاب في مجموعات حوارية صغيرة (5-8 طلاب) متقاربة عمرياً لضمان تفاعل كل ابن.',
+                    'أسلوب تربوي مشوق يربط الآيات بمواقف الحياة اليومية (بر الوالدين، الصدق، التغلب على التحديات، حفظ اللسان).',
+                    'حوار آمن يسمح للابن بطرح تساؤلاته وفهم الحكمة من الأوامر والنواهي الإلهية.',
+                    'خروج الابن في نهاية كل جلسة بـ «خاطرة تدبرية» يسجلها في حسابه لتغذي شجرة المعايشة.',
+                  ],
+                },
+                {
+                  title: '8 جلسات متابعة حفظ',
+                  badge: 'جلستان أسبوعياً • 25-30 دقيقة',
+                  desc: 'جلستان أسبوعياً مع معلم التحفيظ لإتقان التلاوة وضبط مخارج الحروف والتجويد.',
+                  fullDetails: [
+                    'جلسات تحفيظ ومراجعة فردية أو ثنائية مع نخبة من المحفظين المجازين والمؤهلين تربوياً.',
+                    'التركيز على صحة التلاوة، مخارج الحروف الصحيحة، والترتيل الهادئ دون تسرع.',
+                    'مراعاة قدرات كل ابن وسرعته الاستيعابية بدون أي ضغط أو مقارنات سلبية.',
+                    'تسجيل تقرير فوري لكل جلسة يتضمن درجات الإتقان والملاحظات التربوية التي تصل لولي الأمر.',
+                  ],
+                },
+                {
+                  title: 'كتيب الأنشطة التفاعلية',
+                  badge: 'ملف شهري مطبوع ورقمي',
+                  desc: 'أوراق عمل وأسئلة تدبرية وتحديات أسبوعية تثبت المعنى في ذهن الطفل.',
+                  fullDetails: [
+                    'كتيب مصمم بصرياً بجاذبية عالية يرسل رقمياً ومتاح للطباعة المنزلية.',
+                    'خرائط مفاهيمية مبسطة تربط آيات السورة وموضوعاتها بأسلوب بصري ذكي.',
+                    'أنشطة وألغاز استنباطية وتلوين للأطفال الصغار، ومساحات كتابة تأملية لليافعين.',
+                    'مهمات بحثية خفيفة تحفز الابن على استكشاف معاني الكلمات القرآنية الفريدة.',
+                  ],
+                },
+                {
+                  title: 'تطبيقات مع الأسرة',
+                  badge: 'مهمات عائلية أسبوعية',
+                  desc: 'مهمات عائلية تربط الابن بوالديه وإخوانه لتطبيق وصايا الآيات في البيت.',
+                  fullDetails: [
+                    'بطاقات «عشت الآية» تحول المعنى النظري إلى سلوك عملي ملموس داخل المنزل.',
+                    'مهمات تجمع الأسرة كجلسة حوارية عائلية قصيرة (10 دقائق) يعرض فيها الابن ما تعلمه.',
+                    'تأكيد إنجاز المهمة بضغطة زر من ولي الأمر داخل لوحة التحكم.',
+                    'منح الابن وسام «عشت الآية» وإضافة ثمار جديدة لشجرة المعايشة الخاصة به.',
+                  ],
+                },
+              ];
+              const cur = items[selectedDeliverable];
+              if (!cur) return null;
+              return (
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">
+                      {cur.badge}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-black text-stone-900">{cur.title}</h3>
+                  <p className="text-xs text-stone-600 leading-relaxed bg-stone-50 p-3 rounded-xl border border-stone-200">
+                    {cur.desc}
+                  </p>
+
+                  <div className="space-y-2 pt-2">
+                    <h4 className="text-xs font-bold text-stone-800">ما يشمله هذا المحور بالتفصيل:</h4>
+                    {cur.fullDetails.map((point, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-xs text-stone-700 leading-relaxed">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <span>{point}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-4 border-t border-stone-100 flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedDeliverable(null);
+                        onOpenRegister();
+                      }}
+                      className="flex-1 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <span>ابدأ رحلة ابنك الآن</span>
+                      <ArrowLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDeliverable(null)}
+                      className="px-4 py-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs transition-colors cursor-pointer"
+                    >
+                      إغلاق
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
