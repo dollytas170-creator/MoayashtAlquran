@@ -35,6 +35,12 @@ interface AppContextType {
   // Navigation & Role State
   currentRole: UserRole | 'public';
   setCurrentRole: (role: UserRole | 'public') => void;
+  isCheckoutActive: boolean;
+  setIsCheckoutActive: (active: boolean) => void;
+  canGoBack: boolean;
+  previousScreenTitle: string | null;
+  goBack: () => void;
+  goHome: () => void;
   activeParent: ParentUser | null;
   activeStudent: StudentUser | null;
   activeTeacher: TeacherUser | null;
@@ -66,6 +72,9 @@ interface AppContextType {
   verifyParent: (parentId?: string) => void;
   loginParent: (emailOrPhone: string) => boolean;
   logoutParent: () => void;
+  leaveApp: () => void;
+  updateParentProfile: (updates: { fullName?: string; phone?: string; email?: string }) => void;
+  cancelSubscription: (childId: string, reason?: string) => void;
   addChild: (childData: { fullName: string; age: number; gender: 'male' | 'female'; ageGroupId: string; birthDate?: string }) => StudentUser;
   updateChild: (id: string, updates: Partial<StudentUser>) => void;
   deleteChild: (id: string) => void;
@@ -185,6 +194,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     getStorage<string | null>('active_supervisor_id', null)
   );
 
+  // Navigation History & Back Arrow State
+  const [isCheckoutActive, setIsCheckoutActiveState] = useState<boolean>(false);
+  const [navigationHistory, setNavigationHistory] = useState<Array<{
+    role: UserRole | 'public';
+    studentId?: string | null;
+    isCheckout?: boolean;
+    title: string;
+  }>>([]);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Collections (All user data starts STRICTLY EMPTY)
@@ -244,9 +262,131 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const activeTeacher = teachers.find(t => t.id === activeTeacherId) || (teachers.length > 0 ? teachers[0] : null);
   const activeSupervisor = supervisors.find(s => s.id === activeSupervisorId) || (supervisors.length > 0 ? supervisors[0] : null);
 
-  const setCurrentRole = (role: UserRole | 'public') => {
-    setCurrentRoleState(role);
+  const getScreenTitle = (role: UserRole | 'public', checkout?: boolean): string => {
+    if (checkout) return 'الاشتراكات والدفع';
+    switch (role) {
+      case 'parent': return 'لوحة ولي الأمر';
+      case 'student': return 'لوحة الطالب';
+      case 'teacher': return 'لوحة المحفظ';
+      case 'supervisor': return 'لوحة المشرف';
+      case 'admin': return 'لوحة الإدارة';
+      case 'public':
+      default:
+        return 'الرئيسية';
+    }
   };
+
+  const setCurrentRole = (role: UserRole | 'public') => {
+    if (role !== currentRole || isCheckoutActive) {
+      setNavigationHistory(prev => [
+        ...prev.slice(-15),
+        {
+          role: currentRole,
+          studentId: activeStudentId,
+          isCheckout: isCheckoutActive,
+          title: getScreenTitle(currentRole, isCheckoutActive),
+        }
+      ]);
+      if (isCheckoutActive) setIsCheckoutActiveState(false);
+      setCurrentRoleState(role);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const setIsCheckoutActive = (active: boolean) => {
+    if (active && !isCheckoutActive) {
+      setNavigationHistory(prev => [
+        ...prev.slice(-15),
+        {
+          role: currentRole,
+          studentId: activeStudentId,
+          isCheckout: false,
+          title: getScreenTitle(currentRole, false),
+        }
+      ]);
+      setIsCheckoutActiveState(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (!active && isCheckoutActive) {
+      setIsCheckoutActiveState(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const goBack = () => {
+    // If checkout view is active, closing it takes user back to previous view (e.g. parent)
+    if (isCheckoutActive) {
+      setIsCheckoutActiveState(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (navigationHistory.length > 0) {
+      const prevItem = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory(prev => prev.slice(0, -1));
+
+      if (prevItem.isCheckout) {
+        setIsCheckoutActiveState(true);
+      } else {
+        setIsCheckoutActiveState(false);
+      }
+
+      if (prevItem.studentId !== undefined) {
+        setActiveStudentIdState(prevItem.studentId);
+      }
+      setCurrentRoleState(prevItem.role);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // Smart fallback if history is empty
+    if (currentRole === 'student') {
+      setCurrentRoleState('parent');
+    } else if (currentRole !== 'public') {
+      setCurrentRoleState('public');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goHome = () => {
+    if (currentRole !== 'public' || isCheckoutActive) {
+      setNavigationHistory(prev => [
+        ...prev.slice(-15),
+        {
+          role: currentRole,
+          studentId: activeStudentId,
+          isCheckout: isCheckoutActive,
+          title: getScreenTitle(currentRole, isCheckoutActive),
+        }
+      ]);
+      if (isCheckoutActive) {
+        setIsCheckoutActiveState(false);
+      }
+      setCurrentRoleState('public');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const canGoBack = Boolean(
+    isCheckoutActive ||
+    currentRole !== 'public' ||
+    navigationHistory.length > 0
+  );
+
+  const previousScreenTitle = (() => {
+    if (isCheckoutActive) {
+      return 'لوحة ولي الأمر';
+    }
+    if (navigationHistory.length > 0) {
+      return navigationHistory[navigationHistory.length - 1].title;
+    }
+    if (currentRole === 'student') {
+      return 'لوحة ولي الأمر';
+    }
+    if (currentRole !== 'public') {
+      return 'الرئيسية';
+    }
+    return null;
+  })();
 
   const setActiveStudentId = (id: string | null) => {
     setActiveStudentIdState(id);
@@ -310,8 +450,59 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const logoutParent = () => {
     setActiveParentId(null);
     setActiveStudentIdState(null);
+    setIsCheckoutActiveState(false);
+    setNavigationHistory([]);
     setCurrentRoleState('public');
     notifyToast('تم تسجيل الخروج من حساب ولي الأمر بنجاح');
+  };
+
+  const leaveApp = () => {
+    setActiveParentId(null);
+    setActiveStudentIdState(null);
+    setIsCheckoutActiveState(false);
+    setNavigationHistory([]);
+    setCurrentRoleState('public');
+    notifyToast('تمت مغادرة حساب ولي الأمر والعودة إلى الواجهة الرئيسية');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const updateParentProfile = (updates: { fullName?: string; phone?: string; email?: string }) => {
+    if (!activeParentId) return;
+    setParents(prev => prev.map(p => p.id === activeParentId ? { ...p, ...updates } : p));
+    notifyToast('تم حفظ تحديثات بيانات حساب ولي الأمر بنجاح');
+  };
+
+  const cancelSubscription = (childId: string, reason?: string) => {
+    const child = students.find(s => s.id === childId);
+    if (!child) return;
+
+    setStudents(prev => prev.map(s => {
+      if (s.id === childId) {
+        return {
+          ...s,
+          status: 'inactive' as const,
+          enrollmentStatus: 'pending_subscription' as const,
+          subscriptionCancelled: true,
+          subscriptionCancelledAt: new Date().toISOString(),
+          subscriptionCancelReason: reason || 'طلب ولي الأمر إلغاء الاشتراك',
+        };
+      }
+      return s;
+    }));
+
+    const notif: AppNotification = {
+      id: 'notif-' + Date.now(),
+      recipientId: child.parentId,
+      role: 'parent',
+      title: `تم إلغاء الاشتراك للابن/الابنة "${child.fullName}"`,
+      message: `تم إلغاء الاشتراك بنجاح. بيانات وتقدم الطفل وتلاواته المسجلة محفوظة بالكامل ويمكنك إعادة التفعيل في أي وقت.`,
+      type: 'payment',
+      createdAt: new Date().toISOString(),
+      read: false,
+    };
+    setNotifications(prev => [notif, ...prev]);
+
+    notifyToast(`تم إلغاء اشتراك "${child.fullName}" بنجاح، وتقدمه محفوظ`);
   };
 
   const addChild = (childData: { fullName: string; age: number; gender: 'male' | 'female'; ageGroupId: string; birthDate?: string }): StudentUser => {
@@ -913,6 +1104,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveStudentIdState(null);
     setActiveTeacherId(null);
     setActiveSupervisorId(null);
+    setIsCheckoutActiveState(false);
+    setNavigationHistory([]);
     setCurrentRoleState('public');
     notifyToast('تمت إعادة ضبط المنصة إلى الحالة الأولية (صفر مستخدمين)');
   };
@@ -922,6 +1115,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         currentRole,
         setCurrentRole,
+        isCheckoutActive,
+        setIsCheckoutActive,
+        canGoBack,
+        previousScreenTitle,
+        goBack,
+        goHome,
         activeParent,
         activeStudent,
         activeTeacher,
@@ -949,6 +1148,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         verifyParent,
         loginParent,
         logoutParent,
+        leaveApp,
+        updateParentProfile,
+        cancelSubscription,
         addChild,
         updateChild,
         deleteChild,

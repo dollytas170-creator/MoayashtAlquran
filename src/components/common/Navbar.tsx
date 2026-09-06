@@ -15,6 +15,8 @@ import {
   TreeDeciduous,
   Plus,
   Home,
+  ExternalLink,
+  ArrowRight,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole } from '../../types';
@@ -43,6 +45,12 @@ export const Navbar: React.FC<NavbarProps> = ({
     markNotificationRead,
     resetAllData,
     logoutParent,
+    leaveApp,
+    canGoBack,
+    previousScreenTitle,
+    goBack,
+    goHome,
+    isCheckoutActive,
   } = useApp();
 
   const handleOpenLogin = () => {
@@ -175,12 +183,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Main Navbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Logo & Brand */}
-        <div className="flex items-center gap-3">
+        {/* Logo & Brand + Persistent Nav Controls */}
+        <div className="flex items-center gap-2 sm:gap-4">
           <button
             type="button"
-            onClick={() => setCurrentRole('public')}
-            className="flex items-center gap-3 group text-right cursor-pointer"
+            onClick={() => goHome()}
+            className="flex items-center gap-2.5 sm:gap-3 group text-right cursor-pointer"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-800 to-emerald-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
               <TreeDeciduous className="w-5 h-5 text-emerald-200" />
@@ -193,6 +201,38 @@ export const Navbar: React.FC<NavbarProps> = ({
               <p className="text-[11px] text-stone-500 font-medium">رحلة ابنك ليعيش مع القرآن</p>
             </div>
           </button>
+
+          {/* Persistent Navigation Controls (Desktop): Back & Home (Shown on all pages except the main landing page) */}
+          {(currentRole !== 'public' || isCheckoutActive) && (
+            <div className="hidden sm:flex items-center gap-1.5 bg-stone-100/90 p-1 rounded-2xl border border-stone-200 shadow-2xs mr-1">
+              <button
+                type="button"
+                onClick={goBack}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 hover:text-emerald-950 border border-stone-200 hover:border-emerald-300 text-stone-800 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+                title={previousScreenTitle ? `الرجوع للشاشة السابقة: ${previousScreenTitle}` : 'الرجوع للخلف'}
+                aria-label="الرجوع للشاشة السابقة"
+              >
+                <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
+                <span>رجوع للخلف</span>
+                {previousScreenTitle && (
+                  <span className="text-[10px] text-stone-400 font-normal hidden xl:inline">
+                    ({previousScreenTitle})
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={goHome}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 hover:border-emerald-300 hover:bg-emerald-50 bg-white text-stone-800 hover:text-emerald-950 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+                title="الانتقال إلى الواجهة الرئيسية"
+                aria-label="الرئيسية"
+              >
+                <Home className="w-4 h-4 text-emerald-700 group-hover:scale-110 transition-transform" />
+                <span>الرئيسية</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Desktop Controls */}
@@ -390,6 +430,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <p className="text-xs font-bold text-stone-900">{activeParent.fullName}</p>
                 <p className="text-[10px] text-emerald-700 font-semibold">بوابة ولي الأمر ←</p>
               </button>
+
+              {/* Logout & Leave App buttons next to Parent's Name */}
+              <button
+                type="button"
+                onClick={logoutParent}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer"
+                title="تسجيل خروج من حساب ولي الأمر"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">تسجيل خروج</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={leaveApp}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-600 text-xs font-semibold transition-colors cursor-pointer"
+                title="مغادرة التطبيق والعودة إلى الواجهة الرئيسية"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">مغادرة التطبيق</span>
+              </button>
             </div>
           ) : (
             <div className="flex items-center gap-1.5">
@@ -411,31 +472,47 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Mobile Hamburger & Quick Actions */}
-        <div className="flex lg:hidden items-center gap-2">
-          {currentRole !== 'public' ? (
-            <button
-              type="button"
-              onClick={() => handleRoleChange('public')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-              title="العودة للواجهة الرئيسية"
-            >
-              <Home className="w-3.5 h-3.5 text-emerald-700" />
-              <span>الرئيسية</span>
-            </button>
+        {/* Mobile Controls */}
+        <div className="flex lg:hidden items-center gap-1.5">
+          {(currentRole !== 'public' || isCheckoutActive) ? (
+            <>
+              <button
+                type="button"
+                onClick={goBack}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-stone-200 bg-stone-100 hover:bg-emerald-50 text-stone-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs group"
+                title="رجوع للخلف"
+                aria-label="الرجوع للخلف"
+              >
+                <ArrowRight className="w-3.5 h-3.5 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
+                <span>رجوع</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={goHome}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-emerald-50 text-stone-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                title="الرئيسية"
+                aria-label="الرئيسية"
+              >
+                <Home className="w-3.5 h-3.5 text-emerald-700" />
+                <span>الرئيسية</span>
+              </button>
+            </>
           ) : (
             <button
               type="button"
               onClick={handleOpenRegister}
-              className="px-3 py-1.5 rounded-xl bg-emerald-700 text-white text-xs font-bold cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-emerald-700 text-white text-xs font-bold cursor-pointer hover:bg-emerald-800 transition-colors shadow-2xs"
             >
               ابدأ الآن
             </button>
           )}
+
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-xl border border-stone-200 text-stone-700 cursor-pointer"
+            aria-label="فتح القائمة"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -445,18 +522,33 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-stone-200 bg-white p-4 space-y-3">
-          {currentRole !== 'public' && (
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentRole('public');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full py-2.5 px-3 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-900 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-2xs transition-colors"
-            >
-              <Home className="w-4 h-4 text-emerald-700" />
-              <span>العودة إلى الواجهة الرئيسية</span>
-            </button>
+          {/* Back & Home Buttons in Mobile Menu (only on non-landing pages) */}
+          {(currentRole !== 'public' || isCheckoutActive) && (
+            <div className="grid grid-cols-2 gap-2 pb-1">
+              <button
+                type="button"
+                onClick={() => {
+                  goBack();
+                  setMobileMenuOpen(false);
+                }}
+                className="py-2.5 px-3 rounded-xl bg-stone-100 border border-stone-200 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
+              >
+                <ArrowRight className="w-4 h-4 text-emerald-700" />
+                <span>رجوع للخلف</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  goHome();
+                  setMobileMenuOpen(false);
+                }}
+                className="py-2.5 px-3 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-900 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
+              >
+                <Home className="w-4 h-4 text-emerald-700" />
+                <span>الرئيسية</span>
+              </button>
+            </div>
           )}
 
           {currentRole === 'public' ? (
@@ -524,25 +616,40 @@ export const Navbar: React.FC<NavbarProps> = ({
             </>
           )}
 
-          <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
+          <div className="pt-3 border-t border-stone-100">
             {activeParent ? (
-              <>
-                <div className="text-right">
-                  <span className="text-xs font-bold text-stone-800 block">{activeParent.fullName}</span>
-                  <span className="text-[10px] text-stone-400">حساب ولي الأمر</span>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-stone-800 block">{activeParent.fullName}</span>
+                    <span className="text-[10px] text-stone-400">{activeParent.phone} • حساب ولي الأمر</span>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    logoutParent();
-                  }}
-                  className="px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>تسجيل خروج</span>
-                </button>
-              </>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      logoutParent();
+                    }}
+                    className="flex-1 py-1.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>تسجيل خروج</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      leaveApp();
+                    }}
+                    className="flex-1 py-1.5 rounded-xl border border-stone-200 bg-stone-100 text-stone-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>مغادرة التطبيق</span>
+                  </button>
+                </div>
+              </div>
             ) : (
               <>
                 <button

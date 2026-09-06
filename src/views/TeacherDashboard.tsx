@@ -14,6 +14,8 @@ import {
   MessageSquare,
   AlertCircle,
   X,
+  ArrowRight,
+  Home,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -32,6 +34,9 @@ export const TeacherDashboard: React.FC = () => {
     assignStudentTask,
     assessmentCriteria,
     setCurrentRole,
+    goBack,
+    goHome,
+    previousScreenTitle,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'students' | 'audios' | 'sessions' | 'assign_task'>('audios');
@@ -98,8 +103,30 @@ export const TeacherDashboard: React.FC = () => {
       <div className="bg-white border-b border-stone-200 py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-0.5 rounded-md">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={goBack}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-teal-50 hover:text-teal-950 border border-stone-200 hover:border-teal-300 text-stone-700 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+                title={`الرجوع للشاشة السابقة: ${previousScreenTitle || 'الرئيسية'}`}
+                aria-label="الرجوع للشاشة السابقة"
+              >
+                <ArrowRight className="w-4 h-4 text-stone-600 group-hover:text-teal-700 group-hover:translate-x-0.5 transition-transform" />
+                <span>رجوع للخلف</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={goHome}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-teal-50 hover:text-teal-950 border border-stone-200 hover:border-teal-300 text-stone-700 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+                title="العودة للواجهة الرئيسية"
+                aria-label="الرئيسية"
+              >
+                <Home className="w-4 h-4 text-teal-700 group-hover:scale-110 transition-transform" />
+                <span>الرئيسية</span>
+              </button>
+
+              <span className="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-0.5 rounded-md mr-1">
                 لوحة المعلم والمحفظ
               </span>
               <h1 className="text-xl sm:text-2xl font-black text-stone-900">

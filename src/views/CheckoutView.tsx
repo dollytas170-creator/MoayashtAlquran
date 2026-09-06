@@ -15,6 +15,7 @@ import {
   Tag,
   AlertCircle,
   X,
+  Home,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PaymentRecord } from '../types';
@@ -38,6 +39,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
     payments,
     programs,
     setCurrentRole,
+    goHome,
   } = useApp();
 
   const program = programs[0];
@@ -139,33 +141,32 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       <div className="max-w-3xl mx-auto">
         {/* Navigation / Close Bar */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2.5">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
               onClick={onBackToParent}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-stone-700 hover:text-stone-900 hover:bg-stone-100 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
-              title="إغلاق والعودة إلى لوحة ولي الأمر"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-stone-200 hover:border-emerald-300 text-stone-700 hover:text-emerald-950 hover:bg-emerald-50 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+              title="الرجوع للشاشة السابقة (لوحة ولي الأمر)"
             >
-              <ArrowRight className="w-3.5 h-3.5" />
-              <span>لوحة ولي الأمر</span>
+              <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
+              <span>رجوع للخلف</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onBackToHome || goHome}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-stone-200 hover:border-emerald-300 text-stone-700 hover:text-emerald-950 hover:bg-emerald-50 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+              title="العودة للواجهة الرئيسية"
+            >
+              <Home className="w-4 h-4 text-emerald-700 group-hover:scale-110 transition-transform" />
+              <span>الرئيسية</span>
             </button>
           </div>
           
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-              بوابة الدفع الآمنة
+              بوابة الدفع والاشتراك
             </span>
-
-            <button
-              type="button"
-              onClick={onBackToParent}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-600 hover:text-stone-900 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-              title="إغلاق نافذة الدفع والعودة"
-              aria-label="إغلاق نافذة الدفع"
-            >
-              <X className="w-3.5 h-3.5 text-stone-500" />
-              <span>إغلاق</span>
-            </button>
           </div>
         </div>
 

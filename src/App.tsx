@@ -14,14 +14,21 @@ import { CheckoutView } from './views/CheckoutView';
 import { StudentUser } from './types';
 
 function MainLayout() {
-  const { currentRole, setCurrentRole, activeParent, setActiveStudentId } = useApp();
+  const {
+    currentRole,
+    setCurrentRole,
+    activeParent,
+    setActiveStudentId,
+    isCheckoutActive,
+    setIsCheckoutActive,
+    goBack,
+  } = useApp();
 
   // Navigation / Modal States
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAddChildOpen, setIsAddChildOpen] = useState(false);
   const [editingChild, setEditingChild] = useState<StudentUser | null>(null);
-  const [isCheckoutActive, setIsCheckoutActive] = useState(false);
   const [showLanding, setShowLanding] = useState(false);
 
   const handleOpenAddChild = () => {

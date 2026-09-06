@@ -39,6 +39,9 @@ export interface StudentUser {
   status: 'active' | 'pending_payment' | 'inactive' | 'archived' | 'graduated';
   enrollmentStatus?: 'pending_subscription' | 'pending_payment' | 'pending_activation' | 'active';
   completedProgramIds?: string[];
+  subscriptionCancelled?: boolean;
+  subscriptionCancelledAt?: string;
+  subscriptionCancelReason?: string;
   archivedAt?: string;
   graduatedAt?: string;
   graduationNote?: string;

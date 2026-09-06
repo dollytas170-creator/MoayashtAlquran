@@ -13,6 +13,7 @@ import {
   Play,
   RotateCcw,
   ArrowRight,
+  Home,
   Flame,
   Star,
   ChevronLeft,
@@ -44,6 +45,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     familyActivities,
     badges,
     setCurrentRole,
+    goBack,
+    goHome,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<
@@ -72,13 +75,59 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const totalScore = completedTasksCount * 40 + studentAudios.length * 50;
 
   const currentJourneyStageIndex = 2; // e.g. at "يتدبر" stage
+  const [selectedStageIndex, setSelectedStageIndex] = useState<number>(2);
 
   const journeyStages = [
-    { title: 'يحفظ', desc: 'تلاوة سليمة وحفظ متقن', status: 'completed' },
-    { title: 'يفهم', desc: 'إدراك معاني الكلمات', status: 'completed' },
-    { title: 'يتدبر', desc: 'استخراج رسائل الآيات', status: 'current' },
-    { title: 'يطبق', desc: 'تحويل الآية إلى سلوك', status: 'upcoming' },
-    { title: 'يعيش', desc: 'القرآن منهج حياة', status: 'upcoming' },
+    {
+      step: 1,
+      title: 'يحفظ',
+      shortTitle: '1. الحفظ والترتيل',
+      subtitle: 'تلاوة سليمة وحفظ متقن ومخارج رصينة',
+      desc: 'إتقان تلاوة الآيات بأحكام التجويد والتسميع الصوتي المباشر للمحفظ.',
+      status: 'completed' as const,
+      task: 'تم إتمام تسميع الآيات 1-5 بنجاح ونيل درجة 10/10.',
+      elements: ['تسميع صوتي مباشر', 'ضبط المخارج والقلقلة', 'اعتماد المحفظ'],
+    },
+    {
+      step: 2,
+      title: 'يفهم',
+      shortTitle: '2. الفهم والمعاني',
+      subtitle: 'إدراك معاني المفردات وقصة السورة',
+      desc: 'فهم قصة نزول سورة العلق ومعنى العلق وتعليم الإنسان بالقلم.',
+      status: 'completed' as const,
+      task: 'تم حل لغز معاني الكلمات بكتيب الأنشطة التفاعلي بنجاح.',
+      elements: ['خرائط ذهنية', 'قصة أول لقاء في الغار', 'اختبار الفهم'],
+    },
+    {
+      step: 3,
+      title: 'يتدبر',
+      shortTitle: '3. التدبر والتأمل',
+      subtitle: 'استخراج رسائل الآيات في جلسة الكوتش',
+      desc: 'جلسة تدبر حوارية مباشرة لاستنباط أثر العلم وأول أمر نزل به الوحي.',
+      status: 'current' as const,
+      task: 'الموعد القادم: الأربعاء 6:00 م (جلسة تدبر العلق مع الكوتش).',
+      elements: ['جلسة تدبر تفاعلية', 'سؤال تأملي', 'كتابة الخاطرة في الشجرة'],
+    },
+    {
+      step: 4,
+      title: 'يطبق',
+      shortTitle: '4. التطبيق الأسري',
+      subtitle: 'تحويل معاني السورة إلى سلوك يومي',
+      desc: 'تنفيذ مهمة «عشت الآية» في المنزل وتعليم معلومة مفيدة للأسرة.',
+      status: 'upcoming' as const,
+      task: 'مهمة قادمة: قراءة قصة نافعة مع الوالدين وتوثيق الموقف.',
+      elements: ['بطاقة عشت الآية', 'جلسة أسرية', 'تأكيد ولي الأمر'],
+    },
+    {
+      step: 5,
+      title: 'يعيش',
+      shortTitle: '5. المعايشة والهوية',
+      subtitle: 'القرآن منهج حياة وهوية دائمة',
+      desc: 'اكتمال ثمار شجرة المعايشة وترسيخ حب التعلم والتواضع لله تعالى.',
+      status: 'upcoming' as const,
+      task: 'حفل الختام والتكريم الشهري بعد إتمام المراحل الأربع.',
+      elements: ['شجرة المعايشة المكتملة', 'وسام السورة الذهبي', 'شهادة الإتمام'],
+    },
   ];
 
   const handleOpenRecorder = (surah: string = 'سورة العلق', verses: string = 'الآيات 1 - 5') => {
@@ -146,18 +195,29 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               </div>
             </div>
 
-            {onBackToParent && (
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 type="button"
-                onClick={onBackToParent}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-                title="إغلاق بوابة الطالب والعودة للوحة ولي الأمر"
-                aria-label="إغلاق بوابة الطالب"
+                onClick={onBackToParent || goBack}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-950 border border-stone-200 hover:border-emerald-300 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+                title="الرجوع للشاشة السابقة (لوحة ولي الأمر)"
+                aria-label="الرجوع للشاشة السابقة"
               >
-                <X className="w-4 h-4 text-stone-500" />
-                <span>إغلاق والعودة لولي الأمر</span>
+                <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
+                <span>رجوع للخلف</span>
               </button>
-            )}
+
+              <button
+                type="button"
+                onClick={goHome}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-950 border border-stone-200 hover:border-emerald-300 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+                title="العودة للواجهة الرئيسية"
+                aria-label="الرئيسية"
+              >
+                <Home className="w-4 h-4 text-emerald-700 group-hover:scale-110 transition-transform" />
+                <span>الرئيسية</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -245,45 +305,134 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         {/* Tab 1: Journey & Interactive Tree */}
         {activeTab === 'journey' && (
           <div className="space-y-6">
-            {/* Core Journey Progression Bar */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-xs">
-              <div className="text-center max-w-2xl mx-auto mb-8">
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
-                  السورة الحالية: سورة العلق (الشهر الأول)
-                </span>
-                <h3 className="text-xl sm:text-2xl font-black text-stone-900 mt-2">
-                  مسار المعايشة القرآنية
-                </h3>
+            {/* Core Journey Progression Bar - Five-fold Methodology */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-4">
+                <div>
+                  <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+                    المنهجية الخماسية: سورة العلق (الشهر الأول)
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-black text-stone-900 mt-2">
+                    مسار المعايشة القرآنية المتدرج
+                  </h3>
+                </div>
+                <div className="text-xs text-stone-500 font-medium">
+                  انقر على أي مرحلة لاستعراض عناصرها ومهامك فيها
+                </div>
               </div>
 
+              {/* 5 Stages Interactive Progression Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 relative">
-                {journeyStages.map((st, i) => (
-                  <div
-                    key={st.title}
-                    className={`p-4 rounded-2xl border text-center transition-all flex flex-col items-center justify-between ${
-                      st.status === 'completed'
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
-                        : st.status === 'current'
-                        ? 'bg-amber-50 border-amber-400 text-amber-950 ring-2 ring-amber-400/50'
-                        : 'bg-stone-50 border-stone-200 text-stone-400 opacity-70'
-                    }`}
-                  >
-                    <div className="mb-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto text-xs font-bold ${
+                {journeyStages.map((st, i) => {
+                  const isSelected = selectedStageIndex === i;
+                  return (
+                    <button
+                      key={st.title}
+                      type="button"
+                      onClick={() => setSelectedStageIndex(i)}
+                      className={`p-4 rounded-2xl border text-center transition-all flex flex-col items-center justify-between cursor-pointer text-right sm:text-center ${
                         st.status === 'completed'
-                          ? 'bg-emerald-700 text-white'
+                          ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
                           : st.status === 'current'
-                          ? 'bg-amber-600 text-white animate-pulse'
-                          : 'bg-stone-300 text-stone-600'
-                      }`}>
-                        {st.status === 'completed' ? '✓' : i + 1}
+                          ? 'bg-amber-50/90 border-amber-400 text-amber-950 ring-2 ring-amber-400/60'
+                          : 'bg-stone-50/80 border-stone-200 text-stone-500'
+                      } ${isSelected ? 'shadow-md ring-2 ring-emerald-600' : 'hover:bg-white'}`}
+                    >
+                      <div className="w-full">
+                        <div className="flex sm:flex-col items-center justify-between sm:justify-center gap-2 mb-2">
+                          <div
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black shadow-xs ${
+                              st.status === 'completed'
+                                ? 'bg-emerald-700 text-white'
+                                : st.status === 'current'
+                                ? 'bg-amber-600 text-white animate-pulse'
+                                : 'bg-stone-200 text-stone-600'
+                            }`}
+                          >
+                            {st.status === 'completed' ? '✓' : st.step}
+                          </div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/80 border border-stone-200">
+                            {st.status === 'completed'
+                              ? 'تم الإنجاز'
+                              : st.status === 'current'
+                              ? 'المرحلة الحالية'
+                              : 'قريباً'}
+                          </span>
+                        </div>
+                        <h4 className="font-black text-base text-stone-900 mt-1">{st.title}</h4>
+                        <p className="text-xs font-semibold text-emerald-800 mt-0.5">{st.shortTitle}</p>
                       </div>
-                      <h4 className="font-bold text-sm mt-1.5">{st.title}</h4>
-                    </div>
-                    <p className="text-[11px] leading-tight">{st.desc}</p>
-                  </div>
-                ))}
+                      <p className="text-[11px] text-stone-600 leading-tight mt-2">{st.subtitle}</p>
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Selected Stage Elements Deep Dive */}
+              {(() => {
+                const activeStage = journeyStages[selectedStageIndex];
+                return (
+                  <div className="p-5 sm:p-6 rounded-2xl bg-stone-50 border border-stone-200 space-y-4 animate-fade-in">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-xl bg-emerald-700 text-white font-black text-sm flex items-center justify-center">
+                          {activeStage.step}
+                        </span>
+                        <div>
+                          <h5 className="font-black text-base text-stone-900">
+                            المرحلة {activeStage.step}: {activeStage.title} — {activeStage.subtitle}
+                          </h5>
+                          <p className="text-xs text-stone-600">{activeStage.desc}</p>
+                        </div>
+                      </div>
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full self-start sm:self-center ${
+                        activeStage.status === 'completed'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : activeStage.status === 'current'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-stone-200 text-stone-700'
+                      }`}>
+                        الحالة: {activeStage.status === 'completed' ? 'مكتملة بنجاح ✓' : activeStage.status === 'current' ? 'جارية الآن ⏳' : 'مرتقبة'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Elements of the stage */}
+                      <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-2">
+                        <span className="text-xs font-bold text-stone-800 block">
+                          عناصر وأدوات هذه المرحلة:
+                        </span>
+                        <div className="space-y-1.5">
+                          {activeStage.elements.map((el, i) => (
+                            <div key={i} className="text-xs text-stone-700 flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                              <span>{el}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Current Action / Task */}
+                      <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-2">
+                        <span className="text-xs font-bold text-stone-800 block">
+                          المهمة والتكليف العملي:
+                        </span>
+                        <p className="text-xs text-stone-700 leading-relaxed font-medium">
+                          {activeStage.task}
+                        </p>
+                        {activeStage.status === 'current' && (
+                          <div className="pt-2">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                              <Clock className="w-3 h-3 text-amber-700" />
+                              <span>أنت الآن في هذه الخطوة من المنهجية</span>
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Tree of Living with Quran (Gamified Concept) */}
