@@ -7,7 +7,6 @@ import {
   ShieldAlert,
   UserCheck,
   Bell,
-  LogOut,
   ChevronDown,
   Menu,
   X,
@@ -15,8 +14,8 @@ import {
   TreeDeciduous,
   Plus,
   Home,
-  ExternalLink,
   ArrowRight,
+  Settings,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole } from '../../types';
@@ -26,6 +25,7 @@ interface NavbarProps {
   onOpenRegister?: () => void;
   onOpenLogin?: () => void;
   onOpenAddChild?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -33,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenRegister,
   onOpenLogin,
   onOpenAddChild,
+  onOpenSettings,
 }) => {
   const {
     currentRole,
@@ -44,8 +45,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     notifications,
     markNotificationRead,
     resetAllData,
-    logoutParent,
-    leaveApp,
     canGoBack,
     previousScreenTitle,
     goBack,
@@ -201,38 +200,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <p className="text-[11px] text-stone-500 font-medium">رحلة ابنك ليعيش مع القرآن</p>
             </div>
           </button>
-
-          {/* Persistent Navigation Controls (Desktop): Back & Home (Shown on all pages except the main landing page) */}
-          {(currentRole !== 'public' || isCheckoutActive) && (
-            <div className="hidden sm:flex items-center gap-1.5 bg-stone-100/90 p-1 rounded-2xl border border-stone-200 shadow-2xs mr-1">
-              <button
-                type="button"
-                onClick={goBack}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 hover:text-emerald-950 border border-stone-200 hover:border-emerald-300 text-stone-800 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-                title={previousScreenTitle ? `الرجوع للشاشة السابقة: ${previousScreenTitle}` : 'الرجوع للخلف'}
-                aria-label="الرجوع للشاشة السابقة"
-              >
-                <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
-                <span>رجوع للخلف</span>
-                {previousScreenTitle && (
-                  <span className="text-[10px] text-stone-400 font-normal hidden xl:inline">
-                    ({previousScreenTitle})
-                  </span>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={goHome}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 hover:border-emerald-300 hover:bg-emerald-50 bg-white text-stone-800 hover:text-emerald-950 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-                title="الانتقال إلى الواجهة الرئيسية"
-                aria-label="الرئيسية"
-              >
-                <Home className="w-4 h-4 text-emerald-700 group-hover:scale-110 transition-transform" />
-                <span>الرئيسية</span>
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Desktop Controls */}
@@ -345,114 +312,75 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </div>
                   )}
                 </div>
-              ) : (
-                onOpenAddChild && (
-                  <button
-                    type="button"
-                    onClick={onOpenAddChild}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-semibold hover:bg-emerald-200 transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>إضافة أول طفل</span>
-                  </button>
-                )
-              )}
+              ) : null}
             </div>
           )}
 
-          {/* Notifications Dropdown - only visible after parent login */}
-          {Boolean(activeParent && currentRole === 'parent') && (
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowNotifMenu(!showNotifMenu)}
-                className="relative p-2 rounded-xl text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-colors cursor-pointer"
-                title="الإشعارات"
-              >
-                <Bell className="w-5 h-5" />
-                {notifications.filter((n) => !n.read).length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white"></span>
-                )}
-              </button>
+          {/* Notifications Dropdown & Settings Button - visible when parent is logged in */}
+          {Boolean(activeParent) && (
+            <div className="flex items-center gap-1.5">
+              {/* Settings Button */}
+              {onOpenSettings && (
+                <button
+                  type="button"
+                  onClick={onOpenSettings}
+                  className="p-2 rounded-xl text-stone-600 hover:text-emerald-800 hover:bg-stone-100 transition-colors cursor-pointer flex items-center gap-1.5"
+                  title="إعدادات الحساب"
+                  aria-label="إعدادات الحساب"
+                >
+                  <Settings className="w-5 h-5" />
+                  <span className="text-xs font-bold hidden xl:inline">إعدادات الحساب</span>
+                </button>
+              )}
 
-              {showNotifMenu && (
-                <div className="absolute left-0 mt-2 w-80 rounded-2xl bg-white shadow-xl border border-stone-200 p-2 z-50">
-                  <div className="px-3 py-2 border-b border-stone-100 flex items-center justify-between">
-                    <span className="text-xs font-bold text-stone-800">الإشعارات</span>
-                    <span className="text-[10px] text-stone-400">{notifications.length} إشعار</span>
-                  </div>
+              {/* Notifications Dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowNotifMenu(!showNotifMenu)}
+                  className="relative p-2 rounded-xl text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-colors cursor-pointer"
+                  title="الإشعارات"
+                >
+                  <Bell className="w-5 h-5" />
+                  {notifications.filter((n) => !n.read).length > 0 && (
+                    <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white"></span>
+                  )}
+                </button>
 
-                  <div className="max-h-64 overflow-y-auto py-2">
-                    {notifications.length === 0 ? (
-                      <div className="p-4 text-center">
-                        <p className="text-xs text-stone-400">لا توجد إشعارات جديدة</p>
-                      </div>
-                    ) : (
-                      notifications.map((n) => (
-                        <div
-                          key={n.id}
-                          onClick={() => markNotificationRead(n.id)}
-                          className={`p-2.5 rounded-xl text-right transition-colors cursor-pointer ${
-                            n.read ? 'bg-transparent text-stone-600' : 'bg-emerald-50/70 text-stone-900 font-medium'
-                          }`}
-                        >
-                          <p className="text-xs font-bold mb-0.5">{n.title}</p>
-                          <p className="text-[11px] text-stone-500 leading-snug">{n.message}</p>
+                {showNotifMenu && (
+                  <div className="absolute left-0 mt-2 w-80 rounded-2xl bg-white shadow-xl border border-stone-200 p-2 z-50">
+                    <div className="px-3 py-2 border-b border-stone-100 flex items-center justify-between">
+                      <span className="text-xs font-bold text-stone-800">الإشعارات</span>
+                      <span className="text-[10px] text-stone-400">{notifications.length} إشعار</span>
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto py-2">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-center">
+                          <p className="text-xs text-stone-400">لا توجد إشعارات جديدة</p>
                         </div>
-                      ))
-                    )}
+                      ) : (
+                        notifications.map((n) => (
+                          <div
+                            key={n.id}
+                            onClick={() => markNotificationRead(n.id)}
+                            className={`p-2.5 rounded-xl text-right transition-colors cursor-pointer ${
+                              n.read ? 'bg-transparent text-stone-600' : 'bg-emerald-50/70 text-stone-900 font-medium'
+                            }`}
+                          >
+                            <p className="text-xs font-bold mb-0.5">{n.title}</p>
+                            <p className="text-[11px] text-stone-500 leading-snug">{n.message}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
 
-          {/* Header Action Buttons - Unified single Home button */}
-          {currentRole !== 'public' && (
-            <button
-              type="button"
-              onClick={() => handleRoleChange('public')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 hover:border-emerald-300 bg-white hover:bg-emerald-50 text-stone-700 hover:text-emerald-900 text-xs font-bold transition-all cursor-pointer shadow-2xs"
-              title="العودة إلى الصفحة الرئيسية"
-            >
-              <Home className="w-3.5 h-3.5 text-emerald-700" />
-              <span>الرئيسية</span>
-            </button>
-          )}
-
-          {activeParent ? (
-            <div className="flex items-center gap-2 pr-2 border-r border-stone-200">
-              <button
-                type="button"
-                onClick={() => setCurrentRole('parent')}
-                className="text-right hover:opacity-80 transition-opacity cursor-pointer"
-              >
-                <p className="text-xs font-bold text-stone-900">{activeParent.fullName}</p>
-                <p className="text-[10px] text-emerald-700 font-semibold">بوابة ولي الأمر ←</p>
-              </button>
-
-              {/* Logout & Leave App buttons next to Parent's Name */}
-              <button
-                type="button"
-                onClick={logoutParent}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer"
-                title="تسجيل خروج من حساب ولي الأمر"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">تسجيل خروج</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={leaveApp}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-600 text-xs font-semibold transition-colors cursor-pointer"
-                title="مغادرة التطبيق والعودة إلى الواجهة الرئيسية"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">مغادرة التطبيق</span>
-              </button>
-            </div>
-          ) : (
+          {!activeParent && (
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
@@ -473,32 +401,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Mobile Controls */}
-        <div className="flex lg:hidden items-center gap-1.5">
-          {(currentRole !== 'public' || isCheckoutActive) ? (
-            <>
-              <button
-                type="button"
-                onClick={goBack}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-stone-200 bg-stone-100 hover:bg-emerald-50 text-stone-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs group"
-                title="رجوع للخلف"
-                aria-label="الرجوع للخلف"
-              >
-                <ArrowRight className="w-3.5 h-3.5 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
-                <span>رجوع</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={goHome}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-emerald-50 text-stone-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-                title="الرئيسية"
-                aria-label="الرئيسية"
-              >
-                <Home className="w-3.5 h-3.5 text-emerald-700" />
-                <span>الرئيسية</span>
-              </button>
-            </>
-          ) : (
+        <div className="flex lg:hidden items-center gap-2">
+          {currentRole === 'public' && !isCheckoutActive && (
             <button
               type="button"
               onClick={handleOpenRegister}
@@ -511,7 +415,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-xl border border-stone-200 text-stone-700 cursor-pointer"
+            className="p-2 rounded-xl border border-stone-200 text-stone-700 cursor-pointer hover:bg-stone-100 transition-colors"
             aria-label="فتح القائمة"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -522,34 +426,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-stone-200 bg-white p-4 space-y-3">
-          {/* Back & Home Buttons in Mobile Menu (only on non-landing pages) */}
-          {(currentRole !== 'public' || isCheckoutActive) && (
-            <div className="grid grid-cols-2 gap-2 pb-1">
-              <button
-                type="button"
-                onClick={() => {
-                  goBack();
-                  setMobileMenuOpen(false);
-                }}
-                className="py-2.5 px-3 rounded-xl bg-stone-100 border border-stone-200 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
-              >
-                <ArrowRight className="w-4 h-4 text-emerald-700" />
-                <span>رجوع للخلف</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  goHome();
-                  setMobileMenuOpen(false);
-                }}
-                className="py-2.5 px-3 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-900 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
-              >
-                <Home className="w-4 h-4 text-emerald-700" />
-                <span>الرئيسية</span>
-              </button>
-            </div>
-          )}
 
           {currentRole === 'public' ? (
             <div className="space-y-1 pb-2">
@@ -618,37 +494,24 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="pt-3 border-t border-stone-100">
             {activeParent ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="text-right">
-                    <span className="text-xs font-bold text-stone-800 block">{activeParent.fullName}</span>
-                    <span className="text-[10px] text-stone-400">{activeParent.phone} • حساب ولي الأمر</span>
-                  </div>
+              <div className="flex items-center justify-between py-1">
+                <div className="text-right">
+                  <span className="text-xs font-bold text-stone-800 block">{activeParent.fullName}</span>
+                  <span className="text-[10px] text-stone-400">{activeParent.phone} • حساب ولي الأمر</span>
                 </div>
-                <div className="flex items-center gap-2">
+                {onOpenSettings && (
                   <button
                     type="button"
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      logoutParent();
+                      onOpenSettings();
                     }}
-                    className="flex-1 py-1.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-bold transition-colors cursor-pointer"
                   >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>تسجيل خروج</span>
+                    <Settings className="w-4 h-4 text-stone-600" />
+                    <span>إعدادات الحساب</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      leaveApp();
-                    }}
-                    className="flex-1 py-1.5 rounded-xl border border-stone-200 bg-stone-100 text-stone-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>مغادرة التطبيق</span>
-                  </button>
-                </div>
+                )}
               </div>
             ) : (
               <>

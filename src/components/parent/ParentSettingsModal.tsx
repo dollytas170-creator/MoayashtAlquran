@@ -6,8 +6,6 @@ import {
   Mail, 
   ShieldCheck, 
   CreditCard, 
-  LogOut, 
-  ExternalLink, 
   AlertTriangle, 
   CheckCircle2, 
   Save, 
@@ -33,15 +31,13 @@ export const ParentSettingsModal: React.FC<ParentSettingsModalProps> = ({
   const { 
     activeParent, 
     updateParentProfile, 
-    logoutParent, 
-    leaveApp, 
     students, 
     cancelSubscription,
     verifyParent,
     setToastMessage 
   } = useApp();
 
-  const [activeSubTab, setActiveSubTab] = useState<'profile' | 'subscriptions' | 'session'>('profile');
+  const [activeSubTab, setActiveSubTab] = useState<'profile' | 'subscriptions'>('profile');
   
   // Profile edit state
   const [name, setName] = useState(activeParent?.fullName || '');
@@ -53,10 +49,6 @@ export const ParentSettingsModal: React.FC<ParentSettingsModalProps> = ({
   const [confirmCancelChildId, setConfirmCancelChildId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('ظروف عائلية مؤقتة');
   const [customReason, setCustomReason] = useState('');
-
-  // Confirmation prompts for logout and leaving app
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [showLeaveAppConfirm, setShowLeaveAppConfirm] = useState(false);
 
   if (!isOpen || !activeParent) return null;
 
@@ -82,16 +74,6 @@ export const ParentSettingsModal: React.FC<ParentSettingsModalProps> = ({
     cancelSubscription(childId, finalReason);
     setConfirmCancelChildId(null);
     setCustomReason('');
-  };
-
-  const handleDirectLogout = () => {
-    onClose();
-    logoutParent();
-  };
-
-  const handleDirectLeaveApp = () => {
-    onClose();
-    leaveApp();
   };
 
   const handleSendVerificationNotice = () => {
@@ -156,19 +138,6 @@ export const ParentSettingsModal: React.FC<ParentSettingsModalProps> = ({
                 {parentChildren.length}
               </span>
             )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('session')}
-            className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
-              activeSubTab === 'session'
-                ? 'border-rose-600 text-rose-800'
-                : 'border-transparent text-stone-500 hover:text-stone-800'
-            }`}
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>تسجيل الخروج والمغادرة</span>
           </button>
         </div>
 
@@ -438,130 +407,14 @@ export const ParentSettingsModal: React.FC<ParentSettingsModalProps> = ({
               )}
             </div>
           )}
-
-          {/* TAB 3: Session & Exit App */}
-          {activeSubTab === 'session' && (
-            <div className="space-y-4">
-              <p className="text-xs text-stone-600 leading-relaxed">
-                خيارات إدارة الجلسة لحساب ولي الأمر، يمكنك تسجيل الخروج للعودة إلى شاشة تسجيل الدخول أو مغادرة التطبيق إلى الصفحة الرئيسية.
-              </p>
-
-              {/* Option 1: Logout */}
-              <div className="p-4 rounded-2xl border border-stone-200 bg-white space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1.5">
-                      <LogOut className="w-4 h-4 text-rose-600" />
-                      <h4 className="font-bold text-xs sm:text-sm text-stone-900">تسجيل الخروج</h4>
-                    </div>
-                    <p className="text-[11px] text-stone-500 leading-relaxed">
-                      تسجيل الخروج من حساب ولي الأمر الحالي. ستحتاج لإدخال بريدك أو رقم هاتفك لتسجيل الدخول مجدداً.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowLogoutConfirm(true)}
-                    className="shrink-0 px-3.5 py-1.5 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer"
-                  >
-                    تسجيل خروج
-                  </button>
-                </div>
-
-                {showLogoutConfirm && (
-                  <div className="p-3 bg-rose-50/90 rounded-xl border border-rose-200 space-y-2 animate-in fade-in">
-                    <p className="text-xs font-bold text-rose-900">هل أنت متأكد من رغبتك في تسجيل الخروج الآن؟</p>
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowLogoutConfirm(false)}
-                        className="px-3 py-1 rounded-lg bg-white border border-stone-300 text-xs font-semibold text-stone-700 cursor-pointer"
-                      >
-                        إلغاء
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleDirectLogout}
-                        className="px-3.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold cursor-pointer"
-                      >
-                        نعم، تسجيل الخروج
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Option 2: Leave App */}
-              <div className="p-4 rounded-2xl border border-stone-200 bg-white space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1.5">
-                      <ExternalLink className="w-4 h-4 text-emerald-700" />
-                      <h4 className="font-bold text-xs sm:text-sm text-stone-900">مغادرة التطبيق</h4>
-                    </div>
-                    <p className="text-[11px] text-stone-500 leading-relaxed">
-                      الخروج من لوحة التحكم والعودة مباشرةً إلى واجهة الاستقبال والصفحة الرئيسية لمنصة معايشة القرآن الكريم.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowLeaveAppConfirm(true)}
-                    className="shrink-0 px-3.5 py-1.5 rounded-xl border border-stone-300 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold transition-colors cursor-pointer"
-                  >
-                    مغادرة التطبيق
-                  </button>
-                </div>
-
-                {showLeaveAppConfirm && (
-                  <div className="p-3 bg-stone-100 rounded-xl border border-stone-200 space-y-2 animate-in fade-in">
-                    <p className="text-xs font-bold text-stone-900">هل تود مغادرة لوحة التحكم والعودة للصفحة الرئيسية؟</p>
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowLeaveAppConfirm(false)}
-                        className="px-3 py-1 rounded-lg bg-white border border-stone-300 text-xs font-semibold text-stone-700 cursor-pointer"
-                      >
-                        البقاء هنا
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleDirectLeaveApp}
-                        className="px-3.5 py-1 rounded-lg bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold cursor-pointer"
-                      >
-                        نعم، مغادرة التطبيق
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-stone-100 bg-stone-50/80 flex items-center justify-between rounded-b-3xl">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleDirectLogout}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition-colors cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>تسجيل خروج</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleDirectLeaveApp}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-100 text-xs font-semibold transition-colors cursor-pointer"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>مغادرة التطبيق</span>
-            </button>
-          </div>
-
+        <div className="p-4 border-t border-stone-100 bg-stone-50/80 flex items-center justify-end rounded-b-3xl">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold transition-colors cursor-pointer"
+            className="px-5 py-2 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold transition-colors cursor-pointer"
           >
             إغلاق
           </button>

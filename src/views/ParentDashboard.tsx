@@ -33,7 +33,6 @@ import {
   Eye,
   HelpCircle,
   Lock,
-  Settings,
   LogOut,
   ArrowRight,
   Home,
@@ -41,13 +40,13 @@ import {
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
 import { StudentUser } from '../types';
-import { ParentSettingsModal } from '../components/parent/ParentSettingsModal';
 
 interface ParentDashboardProps {
   onOpenAddChild: () => void;
   onEditChild: (child: StudentUser) => void;
   onGoToCheckout: () => void;
   onGoToStudentView: (childId: string) => void;
+  onOpenSettings?: () => void;
 }
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({
@@ -55,6 +54,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   onEditChild,
   onGoToCheckout,
   onGoToStudentView,
+  onOpenSettings,
 }) => {
   const {
     activeParent,
@@ -75,8 +75,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     restoreChild,
     graduateChild,
     enrollChildInProgram,
-    logoutParent,
-    leaveApp,
     cancelSubscription,
     setCurrentRole,
     goBack,
@@ -87,8 +85,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   const [activeTab, setActiveTab] = useState<
     'children' | 'progress' | 'family_activities' | 'sessions' | 'reports' | 'payments'
   >('children');
-
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const [familyNoteInput, setFamilyNoteInput] = useState<{ [id: string]: string }>({});
   
@@ -185,75 +181,18 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 pb-16">
       {/* Top Banner with Parent Info */}
-      <div className="bg-white border-b border-stone-200 py-3.5 sm:py-4 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white border-b border-stone-200 py-4 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={goBack}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-emerald-50 hover:text-emerald-900 border border-stone-200 hover:border-emerald-300 text-stone-700 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-                title={`الرجوع للشاشة السابقة: ${previousScreenTitle || 'الرئيسية'}`}
-                aria-label="الرجوع للشاشة السابقة"
-              >
-                <ArrowRight className="w-4 h-4 text-stone-600 group-hover:text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
-                <span>رجوع للخلف</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={goHome}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-emerald-50 hover:text-emerald-900 border border-stone-200 hover:border-emerald-300 text-stone-700 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-                title="العودة للواجهة الرئيسية"
-                aria-label="الرئيسية"
-              >
-                <Home className="w-4 h-4 text-emerald-700 group-hover:scale-110 transition-transform" />
-                <span>الرئيسية</span>
-              </button>
-
-              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md mr-1">
-                لوحة ولي الأمر
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
+                لوحة متابعة ولي الأمر
               </span>
-              <h1 className="text-lg sm:text-xl font-black text-stone-900">
+              <h1 className="text-xl sm:text-2xl font-black text-stone-900">
                 {activeParent ? `أهلاً بك، ${activeParent.fullName}` : 'لوحة متابعة ولي الأمر'}
               </h1>
-
-              {/* Action buttons directly next to Parent's name */}
-              {activeParent && (
-                <div className="inline-flex items-center gap-1.5 mr-1 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={logoutParent}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer"
-                    title="تسجيل خروج من حساب ولي الأمر"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>تسجيل خروج</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-semibold transition-colors cursor-pointer"
-                    title="إعدادات حساب ولي الأمر والاشتراكات"
-                  >
-                    <Settings className="w-3.5 h-3.5 text-stone-600" />
-                    <span>إعدادات الحساب</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={leaveApp}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 text-xs font-medium transition-colors cursor-pointer"
-                    title="مغادرة التطبيق والعودة إلى الواجهة الرئيسية"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
-                    <span>مغادرة التطبيق</span>
-                  </button>
-                </div>
-              )}
             </div>
-            <p className="text-[11px] text-stone-500 mt-0.5">
+            <p className="text-xs text-stone-500 mt-1">
               متابعة حفظ وتدبر وتطبيق الأبناء، والأنشطة الأسرية المشتركة
             </p>
           </div>
@@ -263,9 +202,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             <button
               type="button"
               onClick={onOpenAddChild}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
             >
-              <UserPlus className="w-3.5 h-3.5" />
+              <UserPlus className="w-4 h-4" />
               <span>إضافة طفل</span>
             </button>
 
@@ -273,9 +212,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               <button
                 type="button"
                 onClick={onGoToCheckout}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold transition-colors cursor-pointer"
               >
-                <CreditCard className="w-3.5 h-3.5" />
+                <CreditCard className="w-4 h-4" />
                 <span>الاشتراكات والدفع</span>
               </button>
             )}
@@ -287,7 +226,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5">
         {/* Navigation Tabs */}
         <div className="flex flex-wrap items-center justify-between border-b border-stone-200 mb-5 pb-2 gap-3">
-          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto pb-1 max-w-full">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
             {[
               { id: 'children', label: 'أطفالي المسجلون', icon: Users },
               { id: 'progress', label: 'التقدم والحفظ والتدبر', icon: TreeDeciduous },
@@ -303,50 +242,28 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
                     isActive
                       ? 'bg-emerald-700 text-white shadow-xs'
                       : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-4 h-4" />
                   <span>{tab.label}</span>
-                  {isActive && activeTab !== 'children' && (
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveTab('children');
-                      }}
-                      title="إغلاق هذا التبويب والعودة لقائمة الأطفال"
-                      className="mr-0.5 p-0.5 rounded-full hover:bg-emerald-800 text-emerald-100 cursor-pointer"
-                    >
-                      <X className="w-3 h-3" />
-                    </span>
-                  )}
                 </button>
               );
             })}
-
-            <button
-              type="button"
-              onClick={() => setIsSettingsOpen(true)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer bg-white border border-stone-200 text-stone-700 hover:bg-stone-100 hover:text-emerald-800"
-              title="فتح إعدادات حساب ولي الأمر والاشتراكات"
-            >
-              <Settings className="w-3.5 h-3.5 text-stone-500" />
-              <span>إعدادات الحساب</span>
-            </button>
           </div>
 
           {activeTab !== 'children' && (
             <button
               type="button"
               onClick={() => setActiveTab('children')}
-              className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-              title="إغلاق التبويب والعودة لقائمة الأطفال"
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-700 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+              title="العودة لقائمة الأطفال المسجلين"
             >
-              <X className="w-3.5 h-3.5 text-stone-500" />
-              <span>إغلاق التبويب</span>
+              <Users className="w-3.5 h-3.5 text-emerald-700" />
+              <span>العودة لقائمة الأطفال</span>
             </button>
           )}
         </div>
@@ -1276,14 +1193,15 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   </h3>
                   <p className="text-[11px] text-stone-500">متابعة حالة اشتراك كل طفل، وخيار إلغاء الاشتراك في أي وقت</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="px-3 py-1.5 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
-                >
-                  <Settings className="w-3.5 h-3.5 text-stone-600" />
-                  <span>إعدادات الاشتراكات بالحساب</span>
-                </button>
+                {onOpenSettings && (
+                  <button
+                    type="button"
+                    onClick={onOpenSettings}
+                    className="px-3 py-1.5 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <span>إعدادات الاشتراكات بالحساب</span>
+                  </button>
+                )}
               </div>
 
               {parentChildren.length === 0 ? (
@@ -1326,7 +1244,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                           {!isCancelled ? (
                             <button
                               type="button"
-                              onClick={() => setIsSettingsOpen(true)}
+                              onClick={onOpenSettings}
                               className="text-rose-700 hover:text-rose-900 font-bold hover:underline cursor-pointer text-[11px] flex items-center gap-1"
                             >
                               <AlertTriangle className="w-3 h-3" />
@@ -1971,13 +1889,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           </div>
         </div>
       )}
-
-      {/* Parent Account Settings Modal */}
-      <ParentSettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        onGoToCheckout={onGoToCheckout}
-      />
     </div>
   );
 };

@@ -146,20 +146,10 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
               type="button"
               onClick={onBackToParent}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-stone-200 hover:border-emerald-300 text-stone-700 hover:text-emerald-950 hover:bg-emerald-50 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-              title="الرجوع للشاشة السابقة (لوحة ولي الأمر)"
+              title="الرجوع للوحة ولي الأمر"
             >
               <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
-              <span>رجوع للخلف</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={onBackToHome || goHome}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-stone-200 hover:border-emerald-300 text-stone-700 hover:text-emerald-950 hover:bg-emerald-50 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-              title="العودة للواجهة الرئيسية"
-            >
-              <Home className="w-4 h-4 text-emerald-700 group-hover:scale-110 transition-transform" />
-              <span>الرئيسية</span>
+              <span>الرجوع للوحة ولي الأمر</span>
             </button>
           </div>
           

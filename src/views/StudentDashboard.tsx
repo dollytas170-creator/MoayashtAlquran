@@ -199,23 +199,11 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               <button
                 type="button"
                 onClick={onBackToParent || goBack}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-950 border border-stone-200 hover:border-emerald-300 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-                title="الرجوع للشاشة السابقة (لوحة ولي الأمر)"
-                aria-label="الرجوع للشاشة السابقة"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-950 border border-stone-200 hover:border-emerald-300 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+                title="الرجوع للوحة ولي الأمر"
               >
                 <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
-                <span>رجوع للخلف</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={goHome}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-950 border border-stone-200 hover:border-emerald-300 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-                title="العودة للواجهة الرئيسية"
-                aria-label="الرئيسية"
-              >
-                <Home className="w-4 h-4 text-emerald-700 group-hover:scale-110 transition-transform" />
-                <span>الرئيسية</span>
+                <span>الرجوع للوحة ولي الأمر</span>
               </button>
             </div>
           </div>

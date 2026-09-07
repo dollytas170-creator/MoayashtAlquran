@@ -184,30 +184,8 @@ export const AdminDashboard: React.FC = () => {
       {/* Admin Top Header */}
       <div className="bg-stone-900 text-white py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              type="button"
-              onClick={goBack}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white border border-stone-700 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-              title={`الرجوع للشاشة السابقة: ${previousScreenTitle || 'الرئيسية'}`}
-              aria-label="الرجوع للشاشة السابقة"
-            >
-              <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
-              <span>رجوع للخلف</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={goHome}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white border border-stone-700 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-              title="العودة للواجهة الرئيسية"
-              aria-label="الرئيسية"
-            >
-              <Home className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-              <span>الرئيسية</span>
-            </button>
-
-            <div className="w-10 h-10 rounded-xl bg-stone-800 text-emerald-400 flex items-center justify-center mr-1">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="w-10 h-10 rounded-xl bg-stone-800 text-emerald-400 flex items-center justify-center">
               <Settings className="w-6 h-6" />
             </div>
             <div>

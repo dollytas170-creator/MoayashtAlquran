@@ -84,29 +84,7 @@ export const SupervisorDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={goBack}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-purple-50 hover:text-purple-950 border border-stone-200 hover:border-purple-300 text-stone-700 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-                title={`الرجوع للشاشة السابقة: ${previousScreenTitle || 'الرئيسية'}`}
-                aria-label="الرجوع للشاشة السابقة"
-              >
-                <ArrowRight className="w-4 h-4 text-stone-600 group-hover:text-purple-700 group-hover:translate-x-0.5 transition-transform" />
-                <span>رجوع للخلف</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={goHome}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-purple-50 hover:text-purple-950 border border-stone-200 hover:border-purple-300 text-stone-700 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-                title="العودة للواجهة الرئيسية"
-                aria-label="الرئيسية"
-              >
-                <Home className="w-4 h-4 text-purple-700 group-hover:scale-110 transition-transform" />
-                <span>الرئيسية</span>
-              </button>
-
-              <span className="text-xs font-bold text-purple-800 bg-purple-50 px-2.5 py-0.5 rounded-md mr-1">
+              <span className="text-xs font-bold text-purple-800 bg-purple-50 px-2.5 py-0.5 rounded-md">
                 لوحة المشرف التربوي
               </span>
               <h1 className="text-xl sm:text-2xl font-black text-stone-900">

@@ -11,6 +11,7 @@ import { TeacherDashboard } from './views/TeacherDashboard';
 import { SupervisorDashboard } from './views/SupervisorDashboard';
 import { AdminDashboard } from './views/AdminDashboard';
 import { CheckoutView } from './views/CheckoutView';
+import { ParentSettingsModal } from './components/parent/ParentSettingsModal';
 import { StudentUser } from './types';
 
 function MainLayout() {
@@ -28,6 +29,7 @@ function MainLayout() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAddChildOpen, setIsAddChildOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editingChild, setEditingChild] = useState<StudentUser | null>(null);
   const [showLanding, setShowLanding] = useState(false);
 
@@ -87,6 +89,7 @@ function MainLayout() {
         onOpenRegister={() => setIsRegisterOpen(true)}
         onOpenLogin={() => setIsLoginOpen(true)}
         onOpenAddChild={handleOpenAddChild}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Main View Router */}
@@ -112,6 +115,7 @@ function MainLayout() {
             onEditChild={handleEditChild}
             onGoToCheckout={() => setIsCheckoutActive(true)}
             onGoToStudentView={handleGoToStudentView}
+            onOpenSettings={() => setIsSettingsOpen(true)}
           />
         ) : currentRole === 'student' ? (
           <StudentDashboard
@@ -167,6 +171,15 @@ function MainLayout() {
         isOpen={isAddChildOpen}
         onClose={() => setIsAddChildOpen(false)}
         editingChild={editingChild}
+      />
+
+      <ParentSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onGoToCheckout={() => {
+          setIsSettingsOpen(false);
+          setIsCheckoutActive(true);
+        }}
       />
     </div>
   );

@@ -3425,13 +3425,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <span>تسجيل الأبناء الآن</span>
                 <ArrowLeft className="w-3.5 h-3.5" />
               </button>
-              <button
-                type="button"
-                onClick={onOpenLogin}
-                className="px-5 py-2.5 rounded-xl bg-stone-50 hover:bg-stone-100 text-stone-800 border border-stone-200 font-bold text-xs transition-colors cursor-pointer"
-              >
-                بوابة ولي الأمر
-              </button>
             </div>
           </div>
         </div>
