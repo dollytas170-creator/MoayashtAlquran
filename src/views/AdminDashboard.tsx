@@ -23,6 +23,7 @@ import {
   UserCheck,
   Check,
   ArrowRight,
+  RotateCcw,
   Home,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -52,7 +53,10 @@ export const AdminDashboard: React.FC = () => {
     goBack,
     goHome,
     previousScreenTitle,
+    resetParentsAndPayments,
   } = useApp();
+
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
     'overview' | 'curriculum' | 'staff' | 'groups' | 'pricing' | 'sessions'
@@ -293,13 +297,47 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Zero-Users Rule Banner */}
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-950 flex items-center justify-between">
+            {/* Zero-Users Rule Banner & Reset Button */}
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0" />
                 <span>
                   <strong>سياسة البيانات الحقيقية:</strong> المنصة لا تحتوي على أي حسابات مستخدمين وهمية. كافة الحسابات والبيانات المسجلة تبدأ من الصفر تماماً.
                 </span>
+              </div>
+              <div className="shrink-0 flex items-center gap-2 w-full sm:w-auto justify-end">
+                {showResetConfirm ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-rose-800 font-bold">تأكيد تصفير الإحصائيات والحسابات؟</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetParentsAndPayments();
+                        setShowResetConfirm(false);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs cursor-pointer"
+                    >
+                      نعم، صَفّر الآن
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowResetConfirm(false)}
+                      className="px-3 py-1.5 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold text-xs cursor-pointer"
+                    >
+                      إلغاء
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowResetConfirm(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-300 bg-white hover:bg-amber-100 text-amber-900 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                    title="تصفير أولياء الأمور والاشتراكات المسددة والإيرادات إلى 0"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
+                    <span>تصفير الإحصائيات (أولياء الأمور والإيرادات = 0)</span>
+                  </button>
+                )}
               </div>
             </div>
 

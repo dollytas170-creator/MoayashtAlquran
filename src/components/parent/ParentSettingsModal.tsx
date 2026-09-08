@@ -13,7 +13,10 @@ import {
   Users, 
   RefreshCw,
   Clock,
-  AlertCircle
+  AlertCircle,
+  LogOut,
+  UserX,
+  Trash2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -34,6 +37,8 @@ export const ParentSettingsModal: React.FC<ParentSettingsModalProps> = ({
     students, 
     cancelSubscription,
     verifyParent,
+    logoutParent,
+    deleteParentAccount,
     setToastMessage 
   } = useApp();
 
@@ -49,6 +54,10 @@ export const ParentSettingsModal: React.FC<ParentSettingsModalProps> = ({
   const [confirmCancelChildId, setConfirmCancelChildId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('ظروف عائلية مؤقتة');
   const [customReason, setCustomReason] = useState('');
+
+  // Logout & Delete account confirmation modals
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (!isOpen || !activeParent) return null;
 
@@ -67,6 +76,18 @@ export const ParentSettingsModal: React.FC<ParentSettingsModalProps> = ({
     });
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
+  };
+
+  const handleExecuteLogout = () => {
+    setShowLogoutConfirm(false);
+    onClose();
+    logoutParent();
+  };
+
+  const handleExecuteDeleteAccount = () => {
+    setShowDeleteConfirm(false);
+    onClose();
+    deleteParentAccount(activeParent.id);
   };
 
   const handleExecuteCancelSubscription = (childId: string) => {
@@ -244,6 +265,123 @@ export const ParentSettingsModal: React.FC<ParentSettingsModalProps> = ({
                   )}
                 </div>
               </form>
+
+              {/* Account Actions Section: Logout & Delete Account */}
+              <div className="pt-4 border-t border-stone-200/80 space-y-3">
+                <h4 className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-stone-500" />
+                  <span>إجراءات وأمان الحساب</span>
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Logout Button */}
+                  <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200/80 flex flex-col justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 text-stone-800 font-bold text-xs">
+                        <LogOut className="w-4 h-4 text-stone-600" />
+                        <span>تسجيل الخروج</span>
+                      </div>
+                      <p className="text-[11px] text-stone-500 mt-1 leading-relaxed">
+                        الخروج من الحساب الحالي على هذا الجهاز مع إمكانية تسجيل الدخول مجدداً في أي وقت.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowLogoutConfirm(true)}
+                      className="w-full py-2 px-3 rounded-xl bg-white border border-stone-300 text-stone-700 hover:bg-stone-100 hover:text-stone-900 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-stone-600" />
+                      <span>تسجيل خروج</span>
+                    </button>
+                  </div>
+
+                  {/* Delete Account Button */}
+                  <div className="p-3.5 rounded-2xl bg-rose-50/60 border border-rose-200 flex flex-col justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 text-rose-800 font-bold text-xs">
+                        <Trash2 className="w-4 h-4 text-rose-600" />
+                        <span>إلغاء وحذف الحساب</span>
+                      </div>
+                      <p className="text-[11px] text-rose-600/90 mt-1 leading-relaxed">
+                        حذف حساب ولي الأمر نهائياً وجميع بيانات الأبناء والاشتراكات وسجلات التقدم.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="w-full py-2 px-3 rounded-xl bg-white border border-rose-300 text-rose-700 hover:bg-rose-100 hover:text-rose-800 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <UserX className="w-3.5 h-3.5 text-rose-600" />
+                      <span>إلغاء الحساب</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Logout Confirmation Prompt */}
+                {showLogoutConfirm && (
+                  <div className="p-4 rounded-2xl bg-stone-100 border border-stone-300 space-y-3 animate-in fade-in">
+                    <div className="flex items-start gap-2.5">
+                      <LogOut className="w-5 h-5 text-stone-700 shrink-0 mt-0.5" />
+                      <div>
+                        <h5 className="font-bold text-xs sm:text-sm text-stone-900">تأكيد تسجيل الخروج</h5>
+                        <p className="text-[11px] text-stone-600 mt-0.5 leading-relaxed">
+                          هل ترغب في تسجيل الخروج الآن من حسابك؟ يمكنك العودة وتسجيل الدخول برقم هاتفك في أي وقت.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowLogoutConfirm(false)}
+                        className="px-3 py-1.5 rounded-xl border border-stone-300 bg-white text-stone-700 text-xs font-bold hover:bg-stone-50 cursor-pointer"
+                      >
+                        إلغاء
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleExecuteLogout}
+                        className="px-4 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1.5"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>تأكيد تسجيل الخروج</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Delete Account Confirmation Prompt */}
+                {showDeleteConfirm && (
+                  <div className="p-4 rounded-2xl bg-rose-50 border border-rose-300 space-y-3 animate-in fade-in">
+                    <div className="flex items-start gap-2.5">
+                      <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                      <div>
+                        <h5 className="font-bold text-xs sm:text-sm text-rose-900">تحذير: إلغاء وحذف الحساب نهائياً</h5>
+                        <p className="text-[11px] text-rose-700 mt-0.5 leading-relaxed">
+                          هذا الإجراء سيقوم بحذف حسابك بالكامل وإزالة ملفات جميع الأبناء المرتبطين به وسجلات التلاوة وتقارير الإنجاز بشكل نهائي. لا يمكن التراجع عن هذه الخطوة.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-rose-200">
+                      <button
+                        type="button"
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-stone-700 text-xs font-bold hover:bg-stone-50 transition-colors cursor-pointer"
+                      >
+                        تراجع وإلغاء
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleExecuteDeleteAccount}
+                        className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>تأكيد الحذف النهائي</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -410,7 +548,30 @@ export const ParentSettingsModal: React.FC<ParentSettingsModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-stone-100 bg-stone-50/80 flex items-center justify-end rounded-b-3xl">
+        <div className="p-4 border-t border-stone-100 bg-stone-50/80 flex items-center justify-between flex-wrap gap-2 rounded-b-3xl">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowLogoutConfirm(true)}
+              className="px-3 py-1.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-100 text-stone-700 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <LogOut className="w-3.5 h-3.5 text-stone-500" />
+              <span>تسجيل خروج</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowDeleteConfirm(true);
+                setActiveSubTab('profile');
+              }}
+              className="px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <UserX className="w-3.5 h-3.5 text-rose-600" />
+              <span>إلغاء الحساب</span>
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={onClose}

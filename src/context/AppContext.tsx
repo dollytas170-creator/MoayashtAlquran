@@ -72,6 +72,7 @@ interface AppContextType {
   verifyParent: (parentId?: string) => void;
   loginParent: (emailOrPhone: string) => boolean;
   logoutParent: () => void;
+  deleteParentAccount: (parentId?: string) => void;
   leaveApp: () => void;
   updateParentProfile: (updates: { fullName?: string; phone?: string; email?: string }) => void;
   cancelSubscription: (childId: string, reason?: string) => void;
@@ -146,13 +147,14 @@ interface AppContextType {
 
   // Utilities
   resetAllData: () => void;
+  resetParentsAndPayments: () => void;
   toastMessage: string | null;
   setToastMessage: (msg: string | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_PREFIX = 'moayasha_platform_v2_';
+const STORAGE_PREFIX = 'moayasha_platform_v3_';
 
 function getStorage<T>(key: string, defaultValue: T): T {
   try {
@@ -454,6 +456,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNavigationHistory([]);
     setCurrentRoleState('public');
     notifyToast('تم تسجيل الخروج من حساب ولي الأمر بنجاح');
+  };
+
+  const deleteParentAccount = (targetParentId?: string) => {
+    const idToDelete = targetParentId || activeParentId;
+    if (!idToDelete) return;
+
+    // Remove children associated with this parent
+    const childrenIds = students.filter(s => s.parentId === idToDelete).map(s => s.id);
+    setStudents(prev => prev.filter(s => s.parentId !== idToDelete));
+    setTasks(prev => prev.filter(t => !childrenIds.includes(t.studentId)));
+    setAudioSubmissions(prev => prev.filter(a => !childrenIds.includes(a.studentId)));
+    setFamilyActivities(prev => prev.filter(fa => !childrenIds.includes(fa.studentId)));
+    setReports(prev => prev.filter(r => !childrenIds.includes(r.studentId)));
+    setNotifications(prev => prev.filter(n => n.recipientId !== idToDelete));
+    
+    // Remove the parent user
+    setParents(prev => prev.filter(p => p.id !== idToDelete));
+
+    // If active parent is the one deleted, clear active state and return to public
+    if (activeParentId === idToDelete) {
+      setActiveParentId(null);
+      setActiveStudentIdState(null);
+      setIsCheckoutActiveState(false);
+      setNavigationHistory([]);
+      setCurrentRoleState('public');
+    }
+
+    notifyToast('تم إلغاء وحذف حساب ولي الأمر وكافة البيانات المرتبطة به بنجاح');
   };
 
   const leaveApp = () => {
@@ -1110,6 +1140,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     notifyToast('تمت إعادة ضبط المنصة إلى الحالة الأولية (صفر مستخدمين)');
   };
 
+  const resetParentsAndPayments = () => {
+    setParents([]);
+    setStudents([]);
+    setPayments([]);
+    setAudioSubmissions([]);
+    setReports([]);
+    setFamilyActivities([]);
+    setTasks([]);
+    setActiveParentId(null);
+    setActiveStudentIdState(null);
+    setIsCheckoutActiveState(false);
+    setStorage('parents', []);
+    setStorage('students', []);
+    setStorage('payments', []);
+    setStorage('audio_submissions', []);
+    setStorage('reports', []);
+    setStorage('family_activities', []);
+    setStorage('tasks', []);
+    setStorage('active_parent_id', null);
+    setStorage('active_student_id', null);
+    notifyToast('تم تصفير أولياء الأمور، الاشتراكات المسددة، وإجمالي الإيرادات إلى 0 بنجاح');
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -1148,6 +1201,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         verifyParent,
         loginParent,
         logoutParent,
+        deleteParentAccount,
         leaveApp,
         updateParentProfile,
         cancelSubscription,
@@ -1196,6 +1250,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addNotification,
         markNotificationRead,
         resetAllData,
+        resetParentsAndPayments,
         toastMessage,
         setToastMessage,
       }}
