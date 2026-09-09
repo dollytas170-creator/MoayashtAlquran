@@ -12,6 +12,7 @@ import { SupervisorDashboard } from './views/SupervisorDashboard';
 import { AdminDashboard } from './views/AdminDashboard';
 import { CheckoutView } from './views/CheckoutView';
 import { ParentSettingsModal } from './components/parent/ParentSettingsModal';
+import { StaffAuthGate } from './components/auth/StaffAuthGate';
 import { StudentUser } from './types';
 
 function MainLayout() {
@@ -23,6 +24,7 @@ function MainLayout() {
     isCheckoutActive,
     setIsCheckoutActive,
     goBack,
+    isStaffAuthenticated,
   } = useApp();
 
   // Navigation / Modal States
@@ -123,11 +125,32 @@ function MainLayout() {
             onOpenAddChild={handleOpenAddChild}
           />
         ) : currentRole === 'teacher' ? (
-          <TeacherDashboard />
+          isStaffAuthenticated('teacher') ? (
+            <TeacherDashboard />
+          ) : (
+            <StaffAuthGate
+              requiredRole="teacher"
+              onBackToHome={handleGoToHome}
+            />
+          )
         ) : currentRole === 'supervisor' ? (
-          <SupervisorDashboard />
+          isStaffAuthenticated('supervisor') ? (
+            <SupervisorDashboard />
+          ) : (
+            <StaffAuthGate
+              requiredRole="supervisor"
+              onBackToHome={handleGoToHome}
+            />
+          )
         ) : currentRole === 'admin' ? (
-          <AdminDashboard />
+          isStaffAuthenticated('admin') ? (
+            <AdminDashboard />
+          ) : (
+            <StaffAuthGate
+              requiredRole="admin"
+              onBackToHome={handleGoToHome}
+            />
+          )
         ) : (
           <LandingPage
             onOpenRegister={handleStartJourney}

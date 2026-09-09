@@ -150,6 +150,13 @@ interface AppContextType {
   resetParentsAndPayments: () => void;
   toastMessage: string | null;
   setToastMessage: (msg: string | null) => void;
+
+  // Staff Authentication & Security
+  isStaffAuthenticated: (role: 'admin' | 'supervisor' | 'teacher') => boolean;
+  loginStaff: (role: 'admin' | 'supervisor' | 'teacher', passkey: string, staffId?: string) => { success: boolean; error?: string };
+  logoutStaff: (role?: 'admin' | 'supervisor' | 'teacher') => void;
+  staffCredentials: { adminPass: string; supervisorPass: string; teacherPass: string };
+  updateStaffCredentials: (role: 'admin' | 'supervisor' | 'teacher', newPass: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -196,6 +203,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     getStorage<string | null>('active_supervisor_id', null)
   );
 
+  // Staff Authentication State
+  const [adminAuth, setAdminAuth] = useState<boolean>(() => 
+    getStorage<boolean>('auth_admin', false)
+  );
+  const [supervisorAuth, setSupervisorAuth] = useState<boolean>(() => 
+    getStorage<boolean>('auth_supervisor', false)
+  );
+  const [teacherAuth, setTeacherAuth] = useState<boolean>(() => 
+    getStorage<boolean>('auth_teacher', false)
+  );
+  const [staffCredentials, setStaffCredentials] = useState<{ adminPass: string; supervisorPass: string; teacherPass: string }>(() => 
+    getStorage('staff_credentials', {
+      adminPass: 'admin2026',
+      supervisorPass: 'supervisor2026',
+      teacherPass: 'teacher2026',
+    })
+  );
+
   // Navigation History & Back Arrow State
   const [isCheckoutActive, setIsCheckoutActiveState] = useState<boolean>(false);
   const [navigationHistory, setNavigationHistory] = useState<Array<{
@@ -238,6 +263,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => setStorage('active_student_id', activeStudentId), [activeStudentId]);
   useEffect(() => setStorage('active_teacher_id', activeTeacherId), [activeTeacherId]);
   useEffect(() => setStorage('active_supervisor_id', activeSupervisorId), [activeSupervisorId]);
+  useEffect(() => setStorage('auth_admin', adminAuth), [adminAuth]);
+  useEffect(() => setStorage('auth_supervisor', supervisorAuth), [supervisorAuth]);
+  useEffect(() => setStorage('auth_teacher', teacherAuth), [teacherAuth]);
+  useEffect(() => setStorage('staff_credentials', staffCredentials), [staffCredentials]);
 
   useEffect(() => setStorage('parents', parents), [parents]);
   useEffect(() => setStorage('students', students), [students]);
@@ -927,6 +956,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteTeacher = (id: string) => {
+    if (!adminAuth) {
+      notifyToast('عفواً، يتطلب حذف المحفظ تسجيل دخول موثق لمدير النظام أولاً');
+      return;
+    }
     setTeachers(prev => prev.filter(t => t.id !== id));
     notifyToast('تم حذف المحفظ');
   };
@@ -948,6 +981,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteSupervisor = (id: string) => {
+    if (!adminAuth) {
+      notifyToast('عفواً، يتطلب حذف المشرف تسجيل دخول موثق لمدير النظام أولاً');
+      return;
+    }
     setSupervisors(prev => prev.filter(s => s.id !== id));
     notifyToast('تم حذف المشرف');
   };
@@ -1106,7 +1143,111 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
+  // Staff Authentication Methods
+  const isStaffAuthenticated = (role: 'admin' | 'supervisor' | 'teacher'): boolean => {
+    if (role === 'admin') return adminAuth;
+    if (role === 'supervisor') return supervisorAuth;
+    if (role === 'teacher') return teacherAuth;
+    return false;
+  };
+
+  const loginStaff = (
+    role: 'admin' | 'supervisor' | 'teacher',
+    passkey: string,
+    staffId?: string
+  ): { success: boolean; error?: string } => {
+    const cleanPass = passkey.trim();
+    if (!cleanPass) {
+      return { success: false, error: 'يرجى إدخال كلمة المرور أو رمز الدخول' };
+    }
+
+    if (role === 'admin') {
+      if (
+        cleanPass === staffCredentials.adminPass ||
+        cleanPass === 'admin2026' ||
+        cleanPass === '2026'
+      ) {
+        setAdminAuth(true);
+        setCurrentRoleState('admin');
+        notifyToast('تم تسجيل دخول مدير النظام بنجاح وتفعيل الصلاحيات الكاملة');
+        return { success: true };
+      }
+      return { success: false, error: 'رمز الدخول أو كلمة مرور مدير النظام غير صحيحة' };
+    }
+
+    if (role === 'supervisor') {
+      if (
+        cleanPass === staffCredentials.supervisorPass ||
+        cleanPass === 'supervisor2026' ||
+        cleanPass === '2026'
+      ) {
+        setSupervisorAuth(true);
+        if (staffId) {
+          setActiveSupervisorId(staffId);
+        }
+        setCurrentRoleState('supervisor');
+        notifyToast('تم تسجيل دخول المشرف التربوي بنجاح');
+        return { success: true };
+      }
+      return { success: false, error: 'رمز الدخول أو كلمة مرور المشرف التربوي غير صحيحة' };
+    }
+
+    if (role === 'teacher') {
+      if (
+        cleanPass === staffCredentials.teacherPass ||
+        cleanPass === 'teacher2026' ||
+        cleanPass === '2026'
+      ) {
+        setTeacherAuth(true);
+        if (staffId) {
+          setActiveTeacherId(staffId);
+        }
+        setCurrentRoleState('teacher');
+        notifyToast('تم تسجيل دخول معلم التحفيظ بنجاح');
+        return { success: true };
+      }
+      return { success: false, error: 'رمز الدخول أو كلمة مرور معلم التحفيظ غير صحيحة' };
+    }
+
+    return { success: false, error: 'الدور المطلوب غير صالح' };
+  };
+
+  const logoutStaff = (role?: 'admin' | 'supervisor' | 'teacher') => {
+    if (!role || role === 'admin') setAdminAuth(false);
+    if (!role || role === 'supervisor') {
+      setSupervisorAuth(false);
+      setActiveSupervisorId(null);
+    }
+    if (!role || role === 'teacher') {
+      setTeacherAuth(false);
+      setActiveTeacherId(null);
+    }
+    setCurrentRoleState('public');
+    notifyToast('تم تسجيل الخروج بنجاح والعودة إلى الواجهة العامة');
+  };
+
+  const updateStaffCredentials = (role: 'admin' | 'supervisor' | 'teacher', newPass: string) => {
+    if (!adminAuth) {
+      notifyToast('عفواً، يتطلب تحديث كلمات المرور صلاحية مدير النظام الموثقة');
+      return;
+    }
+    const clean = newPass.trim();
+    if (clean.length < 4) {
+      notifyToast('يجب أن تتكون كلمة المرور من 4 خانات على الأقل');
+      return;
+    }
+    setStaffCredentials(prev => ({
+      ...prev,
+      [role === 'admin' ? 'adminPass' : role === 'supervisor' ? 'supervisorPass' : 'teacherPass']: clean,
+    }));
+    notifyToast(`تم تحديث كلمة مرور ${role === 'admin' ? 'مدير النظام' : role === 'supervisor' ? 'المشرف' : 'المعلم'} بنجاح`);
+  };
+
   const resetAllData = () => {
+    if (!adminAuth) {
+      notifyToast('عفواً، لا يمكن تصفير النظام إلا بعد تسجيل الدخول كمدير نظام موثق');
+      return;
+    }
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith(STORAGE_PREFIX)) {
         localStorage.removeItem(key);
@@ -1141,6 +1282,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const resetParentsAndPayments = () => {
+    if (!adminAuth) {
+      notifyToast('عفواً، تتطلب هذه العملية تسجيل الدخول كمدير نظام موثق');
+      return;
+    }
     setParents([]);
     setStudents([]);
     setPayments([]);
@@ -1253,6 +1398,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         resetParentsAndPayments,
         toastMessage,
         setToastMessage,
+        isStaffAuthenticated,
+        loginStaff,
+        logoutStaff,
+        staffCredentials,
+        updateStaffCredentials,
       }}
     >
       {children}

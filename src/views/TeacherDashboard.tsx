@@ -16,6 +16,7 @@ import {
   X,
   ArrowRight,
   Home,
+  LogOut,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -37,6 +38,7 @@ export const TeacherDashboard: React.FC = () => {
     goBack,
     goHome,
     previousScreenTitle,
+    logoutStaff,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'students' | 'audios' | 'sessions' | 'assign_task'>('audios');
@@ -124,6 +126,16 @@ export const TeacherDashboard: React.FC = () => {
             >
               <Plus className="w-4 h-4" />
               <span>إسناد مهمة جديدة للطلاب</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => logoutStaff('teacher')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-stone-100 hover:bg-rose-50 text-stone-700 hover:text-rose-700 border border-stone-200 hover:border-rose-200 text-xs font-bold transition-all cursor-pointer"
+              title="تسجيل الخروج من لوحة المعلم"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>تسجيل الخروج</span>
             </button>
           </div>
         </div>

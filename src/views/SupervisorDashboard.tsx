@@ -16,6 +16,7 @@ import {
   X,
   ArrowRight,
   Home,
+  LogOut,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/common/EmptyState';
@@ -33,6 +34,7 @@ export const SupervisorDashboard: React.FC = () => {
     goBack,
     goHome,
     previousScreenTitle,
+    logoutStaff,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<
@@ -104,6 +106,16 @@ export const SupervisorDashboard: React.FC = () => {
             >
               <FileText className="w-4 h-4" />
               <span>إصدار تقرير تربوي لولي أمر</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => logoutStaff('supervisor')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-stone-800 hover:bg-rose-950/80 text-stone-300 hover:text-rose-200 border border-stone-700 hover:border-rose-800 text-xs font-bold transition-all cursor-pointer"
+              title="تسجيل الخروج من لوحة الإشراف"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>تسجيل الخروج</span>
             </button>
           </div>
         </div>

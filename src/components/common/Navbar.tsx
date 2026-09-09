@@ -16,6 +16,7 @@ import {
   Home,
   ArrowRight,
   Settings,
+  Lock,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole } from '../../types';
@@ -50,6 +51,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     goBack,
     goHome,
     isCheckoutActive,
+    isStaffAuthenticated,
+    logoutStaff,
   } = useApp();
 
   const handleOpenLogin = () => {
@@ -94,89 +97,94 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200">
-      {/* Top Prototype Helper Bar */}
-      <div className="bg-stone-900 text-stone-300 text-xs px-4 py-1 flex flex-wrap items-center justify-between border-b border-stone-800">
+      {/* Top Security & Status Bar */}
+      <div className="bg-stone-900 text-stone-300 text-xs px-4 py-1.5 flex flex-wrap items-center justify-between border-b border-stone-800">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span className="font-semibold text-stone-200">منصة معايشة القرآن</span>
-          <span className="text-stone-400 hidden sm:inline">| التبديل السريع بين الأدوار للتجربة:</span>
+          <span className="text-stone-400 hidden sm:inline text-[11px]">| بوابة التعليم القرآني والتربوي التفاعلي</span>
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => handleRoleChange('public')}
-            className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1 ${
-              currentRole === 'public' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-            }`}
-          >
-            <Home className="w-3 h-3 text-emerald-200" />
-            <span>الرئيسية</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleChange('parent')}
-            className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1 ${
-              currentRole === 'parent' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-            }`}
-          >
-            <UserCheck className="w-3 h-3 text-emerald-300" />
-            <span>ولي الأمر</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleChange('student')}
-            className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1 ${
-              currentRole === 'student' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-            }`}
-          >
-            <Sparkles className="w-3 h-3 text-teal-300" />
-            <span>الطالب</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleChange('teacher')}
-            className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1 ${
-              currentRole === 'teacher' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-            }`}
-          >
-            <BookOpen className="w-3 h-3 text-indigo-300" />
-            <span>المحفظ</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleChange('supervisor')}
-            className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1 ${
-              currentRole === 'supervisor' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-            }`}
-          >
-            <GraduationCap className="w-3 h-3 text-amber-300" />
-            <span>المشرف</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleChange('admin')}
-            className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1 ${
-              currentRole === 'admin' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-            }`}
-          >
-            <ShieldAlert className="w-3 h-3 text-rose-300" />
-            <span>الإدارة</span>
-          </button>
+        <div className="flex items-center gap-2">
+          {/* Active Staff Indicator or Staff Access Gateway */}
+          {isStaffAuthenticated('admin') ? (
+            <div className="flex items-center gap-1.5 bg-purple-950/80 border border-purple-800/80 px-2 py-0.5 rounded-md text-[11px] text-purple-200">
+              <ShieldAlert className="w-3 h-3 text-purple-400" />
+              <button
+                type="button"
+                onClick={() => handleRoleChange('admin')}
+                className="font-bold hover:underline cursor-pointer"
+              >
+                جلسة الإدارة نشطة
+              </button>
+              <button
+                type="button"
+                onClick={() => logoutStaff('admin')}
+                className="text-purple-300 hover:text-white underline text-[10px] mr-1 cursor-pointer"
+                title="تسجيل الخروج من الإدارة"
+              >
+                (خروج)
+              </button>
+            </div>
+          ) : isStaffAuthenticated('supervisor') ? (
+            <div className="flex items-center gap-1.5 bg-blue-950/80 border border-blue-800/80 px-2 py-0.5 rounded-md text-[11px] text-blue-200">
+              <GraduationCap className="w-3 h-3 text-blue-400" />
+              <button
+                type="button"
+                onClick={() => handleRoleChange('supervisor')}
+                className="font-bold hover:underline cursor-pointer"
+              >
+                جلسة المشرف نشطة
+              </button>
+              <button
+                type="button"
+                onClick={() => logoutStaff('supervisor')}
+                className="text-blue-300 hover:text-white underline text-[10px] mr-1 cursor-pointer"
+                title="تسجيل الخروج من الإشراف"
+              >
+                (خروج)
+              </button>
+            </div>
+          ) : isStaffAuthenticated('teacher') ? (
+            <div className="flex items-center gap-1.5 bg-teal-950/80 border border-teal-800/80 px-2 py-0.5 rounded-md text-[11px] text-teal-200">
+              <BookOpen className="w-3 h-3 text-teal-400" />
+              <button
+                type="button"
+                onClick={() => handleRoleChange('teacher')}
+                className="font-bold hover:underline cursor-pointer"
+              >
+                جلسة المحفظ نشطة
+              </button>
+              <button
+                type="button"
+                onClick={() => logoutStaff('teacher')}
+                className="text-teal-300 hover:text-white underline text-[10px] mr-1 cursor-pointer"
+                title="تسجيل الخروج من حساب المحفظ"
+              >
+                (خروج)
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleRoleChange('admin')}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer border border-stone-700"
+            >
+              <Lock className="w-3 h-3 text-amber-400" />
+              <span>دخول الكادر (إدارة / إشراف / محفظ)</span>
+            </button>
+          )}
 
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm('هل تود إعادة تعيين جميع البيانات وحذف المدخلات للبدء بحالة أولية فارغة؟')) {
-                resetAllData();
-              }
-            }}
-            title="إعادة ضبط البيانات إلى الحالة الفارغة"
-            className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-rose-950/60 text-rose-300 hover:bg-rose-900 transition-colors flex items-center gap-1 cursor-pointer mr-1"
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span className="hidden md:inline">تصفير</span>
-          </button>
+          {currentRole !== 'public' && (
+            <button
+              type="button"
+              onClick={() => handleRoleChange('public')}
+              className="px-2 py-1 rounded-md text-[11px] font-medium bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors cursor-pointer flex items-center gap-1"
+            >
+              <Home className="w-3 h-3 text-emerald-300" />
+              <span>الرئيسية</span>
+            </button>
+          )}
         </div>
       </div>
 

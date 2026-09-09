@@ -25,9 +25,11 @@ import {
   ArrowRight,
   RotateCcw,
   Home,
+  LogOut,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SessionType } from '../types';
+import { AdminSettingsModal } from '../components/admin/AdminSettingsModal';
 
 export const AdminDashboard: React.FC = () => {
   const {
@@ -54,9 +56,11 @@ export const AdminDashboard: React.FC = () => {
     goHome,
     previousScreenTitle,
     resetParentsAndPayments,
+    logoutStaff,
   } = useApp();
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
     'overview' | 'curriculum' | 'staff' | 'groups' | 'pricing' | 'sessions'
@@ -189,9 +193,15 @@ export const AdminDashboard: React.FC = () => {
       <div className="bg-stone-900 text-white py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="w-10 h-10 rounded-xl bg-stone-800 text-emerald-400 flex items-center justify-center">
-              <Settings className="w-6 h-6" />
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              className="w-10 h-10 rounded-xl bg-stone-800 hover:bg-stone-700 text-emerald-400 hover:text-emerald-300 flex items-center justify-center border border-stone-700 hover:border-emerald-500/60 transition-all cursor-pointer shadow-xs group"
+              title="إعدادات الإدارة والنظام (انقر لفتح الإعدادات)"
+              aria-label="إعدادات الإدارة والنظام"
+            >
+              <Settings className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl sm:text-2xl font-black">لوحة الإدارة والتحكم الشاملة</h1>
@@ -203,6 +213,28 @@ export const AdminDashboard: React.FC = () => {
                 إدارة المناهج، الكوادر التعليمية، المجموعات، التسعير، والجلسات المباشرة
               </p>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white border border-stone-700 hover:border-stone-600 text-xs font-bold transition-all cursor-pointer shadow-xs"
+              title="إعدادات النظام والأمان"
+            >
+              <Settings className="w-3.5 h-3.5 text-emerald-400" />
+              <span>إعدادات النظام</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => logoutStaff('admin')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-200 border border-rose-800 text-xs font-bold transition-all cursor-pointer shadow-xs"
+              title="تسجيل الخروج من لوحة الإدارة"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>تسجيل الخروج</span>
+            </button>
           </div>
         </div>
       </div>
@@ -219,6 +251,7 @@ export const AdminDashboard: React.FC = () => {
               { id: 'groups', label: 'المجموعات والفئات العمرية', icon: Layers },
               { id: 'pricing', label: 'التسعير والكوبونات', icon: DollarSign },
               { id: 'sessions', label: 'جدول الجلسات المباشرة', icon: Calendar },
+              { id: 'settings', label: 'إعدادات النظام والأمان', icon: Settings },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -226,7 +259,13 @@ export const AdminDashboard: React.FC = () => {
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => {
+                    if (tab.id === 'settings') {
+                      setIsSettingsOpen(true);
+                    } else {
+                      setActiveTab(tab.id as any);
+                    }
+                  }}
                   className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
                     isActive
                       ? 'bg-stone-900 text-white shadow-xs'
@@ -837,6 +876,12 @@ export const AdminDashboard: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Admin Settings Modal */}
+      <AdminSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 };
